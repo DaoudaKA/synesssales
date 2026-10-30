@@ -17,3 +17,15 @@ Ce fichier garde la trace des décisions du projet : quoi, quand, qui, et avec q
 - Première source de collecte
 - Mode d'accès à Garage.sn
 - Cadre de collaboration (statut, durée, rémunération, propriété du code)
+
+
+
+
+## 2026-10-30
+
+- PostgreSQL 18 installé en direct sur le poste de développement. La CI et le plan utilisent la 16 : à aligner avant la livraison.
+- Utilisateur personnalisé (connexion par e-mail) déclaré avant les premières migrations métier, car le changer ensuite est très coûteux.
+- `PermissionMetier` : nom choisi pour ne pas confondre avec la `Permission` interne de Django.
+- Un compte suspendu ne peut pas se connecter (`is_active` dérivé du statut).
+- `SECURE_HSTS_PRELOAD` non activé : décision irréversible, à prendre quand le domaine de production existe.
+- Suppression d'un chef d'équipe ou d'une équipe : pas de suppression en cascade (`SET_NULL`), pour ne perdre ni équipe ni utilisateur.
