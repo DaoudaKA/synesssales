@@ -18,3 +18,7 @@ def test_connexion_postgresql():
     with connection.cursor() as curseur:
         curseur.execute("SELECT 1;")
         assert curseur.fetchone() == (1,)
+def test_adresse_sante(client):
+    reponse = client.get("/sante/")
+    assert reponse.status_code == 200
+    assert reponse.json() == {"statut": "ok"}
