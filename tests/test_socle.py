@@ -22,3 +22,5 @@ def test_adresse_sante(client):
     reponse = client.get("/sante/")
     assert reponse.status_code == 200
     assert reponse.json() == {"statut": "ok"}
+def test_application_noyau_declaree():
+    assert "applications.noyau" in settings.INSTALLED_APPS
