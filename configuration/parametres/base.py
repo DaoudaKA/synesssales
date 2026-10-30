@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Applications du projet
     "applications.noyau",
+    "applications.comptes",
 ]
 
 MIDDLEWARE = [
@@ -67,7 +68,8 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
-
+# Utilisateur personnalisé : connexion par e-mail
+AUTH_USER_MODEL = "comptes.Utilisateur"
 # Langue et fuseau horaire
 LANGUAGE_CODE = "fr-fr"
 TIME_ZONE = "Africa/Dakar"
