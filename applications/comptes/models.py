@@ -92,6 +92,13 @@ class Utilisateur(AbstractBaseUser, PermissionsMixin):
     nom = models.CharField(max_length=150)
     statut = models.CharField(max_length=10, choices=Statut.choices, default=Statut.ACTIF)
     roles = models.ManyToManyField(Role, blank=True, related_name="utilisateurs")
+    equipe = models.ForeignKey(
+        "equipes.Equipe",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="membres",
+    )
     is_staff = models.BooleanField("accès à l'administration", default=False)
     date_creation = models.DateTimeField(auto_now_add=True)
 
