@@ -1,0 +1,8 @@
+"""Configuration de l'application comptes."""
+from django.apps import AppConfig
+
+
+class ComptesConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "applications.comptes"
+    verbose_name = "Comptes et droits"
