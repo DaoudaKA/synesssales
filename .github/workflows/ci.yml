@@ -1,0 +1,57 @@
+name: Intégration continue
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  controles:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: synesssales
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: mot_de_passe_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U app"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DJANGO_SETTINGS_MODULE: configuration.parametres.dev
+      DJANGO_SECRET_KEY: cle-de-test-uniquement-pour-la-ci
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+      DEBUG: "true"
+      POSTGRES_DB: synesssales
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: mot_de_passe_ci
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: "5432"
+      DATABASE_URL: postgres://app:mot_de_passe_ci@localhost:5432/synesssales
+      REDIS_URL: redis://localhost:6379/0
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+
+      - name: Installer les bibliothèques
+        run: pip install -r requirements-dev.txt
+
+      - name: Style du code (ruff)
+        run: ruff check .
+
+      - name: Tests (pytest)
+        run: pytest
