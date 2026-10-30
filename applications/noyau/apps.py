@@ -1,0 +1,8 @@
+"""Configuration de l'application noyau."""
+from django.apps import AppConfig
+
+
+class NoyauConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "applications.noyau"
+    verbose_name = "Noyau"
