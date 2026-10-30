@@ -1,0 +1,23 @@
+# Secrets : ne jamais envoyer sur GitHub
+.env
+
+# Environnement virtuel (chacun recrée le sien)
+.venv/
+
+# Fichiers temporaires de Python
+__pycache__/
+*.pyc
+
+# Base de données locale de secours
+db.sqlite3
+
+# Fichiers générés
+staticfiles/
+.coverage
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+
+# Données réelles et sauvegardes : jamais dans le dépôt
+data/reel/
+*.dump
