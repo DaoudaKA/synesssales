@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block titre %}Accès refusé — SYNESS Sales{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>Accès refusé</h1>
+  <p>Votre rôle ne vous donne pas accès à cette page.</p>
+  <p><a href="{% url 'accueil' %}">Retour à l'accueil</a></p>
+</div>
+{% endblock %}

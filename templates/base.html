@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titre %}SYNESS Sales{% endblock %}</title>
+  <style>
+    :root {
+      --violet: #4A3BE0;
+      --violet-fonce: #3A2DB3;
+      --jaune: #E9E60B;
+      --blanc: #FFFFFF;
+      --texte: #1D1B3A;
+      --fond: #F6F5FD;
+      --police: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    body { font-family: var(--police); margin: 0; background: var(--fond); color: var(--texte); }
+    header { background: var(--violet); color: var(--blanc); padding: 12px 24px;
+             border-bottom: 4px solid var(--jaune); display: flex;
+             justify-content: space-between; align-items: center; }
+    header form { display: inline; margin: 0; }
+    header button { margin: 0; background: var(--jaune); color: var(--violet); }
+    header button:hover { background: var(--blanc); }
+    main { max-width: 640px; margin: 32px auto; padding: 0 16px; }
+    .carte { background: var(--blanc); border-radius: 8px; padding: 24px;
+             border-top: 4px solid var(--jaune); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+    h1, h2 { color: var(--violet); }
+    label { display: block; margin: 12px 0 4px; font-weight: 600; }
+    input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #bbb;
+            border-radius: 4px; font: inherit; }
+    input:focus { outline: 2px solid var(--violet); border-color: var(--violet); }
+    button { margin-top: 16px; padding: 8px 16px; cursor: pointer; border: 0;
+             border-radius: 4px; background: var(--violet); color: var(--blanc);
+             font: inherit; font-weight: 600; }
+    button:hover { background: var(--violet-fonce); }
+    a { color: var(--violet); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 8px; border-bottom: 1px solid #E3E1F5; }
+    th { color: var(--violet); }
+    .erreur { color: #B42318; }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>SYNESS Sales</strong>
+    {% if user.is_authenticated %}
+      <form method="post" action="{% url 'deconnexion' %}">
+        {% csrf_token %}
+        <button type="submit">Se déconnecter</button>
+      </form>
+    {% endif %}
+  </header>
+  <main>
+    {% block contenu %}{% endblock %}
+  </main>
+</body>
+</html>
