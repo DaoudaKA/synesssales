@@ -88,24 +88,17 @@ class Script(models.Model):
         return f"{self.produit} — version {self.version}"
 
 
+
 class ProspectQuerySet(models.QuerySet):
     """Requêtes sur les prospects, filtrées selon les droits de la matrice."""
 
     def visible_to(self, utilisateur):
         # Import local : évite une dépendance circulaire entre les applications.
-        from applications.comptes.permissions import portees
+        from applications.comptes.permissions import restreindre
 
-        accordees = portees(utilisateur, "Prospects", "L")
-        if "toute" in accordees:
-            return self
-        conditions = Q(pk__in=[])
-        if "propre" in accordees:
-            conditions |= Q(commercial=utilisateur)
-        if "perimetre" in accordees:
-            if utilisateur.equipe_id is not None:
-                conditions |= Q(equipe_id=utilisateur.equipe_id)
-            conditions |= Q(equipe__chef_equipe=utilisateur)
-        return self.filter(conditions)
+        return restreindre(
+            self, utilisateur, "Prospects", "commercial", "equipe", "equipe__chef_equipe"
+        )
 
 
 class Prospect(models.Model):
@@ -172,6 +165,23 @@ class Prospect(models.Model):
         return f"{self.nom} ({self.produit})"
 
 
+class AffectationQuerySet(models.QuerySet):
+    """Requêtes sur les affectations, filtrées selon les droits de la matrice."""
+
+    def visible_to(self, utilisateur):
+        from applications.comptes.permissions import restreindre
+
+        return restreindre(
+            self,
+            utilisateur,
+            "Équipes et affectations",
+            "utilisateur",
+            "utilisateur__equipe",
+            "utilisateur__equipe__chef_equipe",
+        )
+
+
+
 class Affectation(models.Model):
     """Affectation d'un commercial à un produit, avec son historique."""
 
@@ -188,6 +198,7 @@ class Affectation(models.Model):
     )
     date_debut = models.DateField()
     date_fin = models.DateField(null=True, blank=True)
+    objects = AffectationQuerySet.as_manager()
 
     class Meta:
         verbose_name = "affectation"
