@@ -2,7 +2,7 @@
 
 Plateforme de collecte de données et de pilotage commercial pour l'écosystème SYNESS. Premier produit : Garage.sn.
 
-**État :** jalon 0 (socle du projet) en cours. Aucune fonction métier n'est encore livrée.
+**État :** jalon 0 (socle du projet) terminé : comptes, équipes, partenaires, collecte, ventes, notifications et journal d'audit sont modélisés et testés. Aucune fonction métier n'est encore exposée.
 
 ## Prérequis
 
@@ -77,7 +77,27 @@ Les deux doivent réussir avant chaque commit.
 
 ## Docker
 
-Prévu pour la livraison (`docker-compose.yml`), pas encore validé.
+## Lancement avec Docker
+
+Alternative à l'installation de PostgreSQL : Docker démarre la base, le cache et l'application.
+
+1. Installer Docker Desktop et le lancer.
+2. Créer le fichier `.env` comme à l'étape 4 ci-dessus. Les adresses de la base et du cache sont corrigées automatiquement par `docker-compose.yml`.
+3. Lancer :
+
+   ```
+   docker compose up --build
+   ```
+
+4. Ouvrir http://localhost:8000/sante/ (réponse attendue : `{"statut": "ok"}`).
+5. Dans un second terminal :
+
+   ```
+   docker compose exec web python manage.py createsuperuser
+   docker compose exec web pytest
+   ```
+
+Arrêter avec `Ctrl+C`, puis `docker compose down`. La base Docker (PostgreSQL 16) est distincte d'une base installée sur le poste. Le port 8000 doit être libre.
 
 ## Documents du projet
 
