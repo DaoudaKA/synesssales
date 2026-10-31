@@ -1,4 +1,5 @@
 """Modèles du pilotage commercial : produits, campagnes et scripts (annexe E.2)."""
+from django.conf import settings
 from django.db import models
 from django.db.models import F, Q
 
@@ -85,3 +86,102 @@ class Script(models.Model):
 
     def __str__(self):
         return f"{self.produit} — version {self.version}"
+
+
+class Prospect(models.Model):
+    """Un prospect : une personne ou une entreprise à convaincre pour un produit."""
+
+    class Statut(models.TextChoices):
+        NOUVEAU = "nouveau", "Nouveau"
+        CONTACTE = "contacte", "Contacté"
+        QUALIFIE = "qualifie", "Qualifié"
+        PROPOSITION = "proposition", "Proposition faite"
+        GAGNE = "gagne", "Gagné"
+        PERDU = "perdu", "Perdu"
+        REFUSE = "refuse", "Refusé"
+
+    class Interet(models.TextChoices):
+        FAIBLE = "faible", "Faible"
+        MOYEN = "moyen", "Moyen"
+        FORT = "fort", "Fort"
+
+    nom = models.CharField(max_length=200)
+    partenaire = models.ForeignKey(
+        "partenaires.Partenaire",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="prospects",
+    )
+    produit = models.ForeignKey(Produit, on_delete=models.PROTECT, related_name="prospects")
+    campagne = models.ForeignKey(
+        Campagne,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="prospects",
+    )
+    commercial = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="prospects_suivis",
+    )
+    equipe = models.ForeignKey(
+        "equipes.Equipe",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="prospects",
+    )
+    statut = models.CharField(max_length=12, choices=Statut.choices, default=Statut.NOUVEAU)
+    niveau_interet = models.CharField(max_length=6, choices=Interet.choices, blank=True)
+    besoin_identifie = models.TextField(blank=True)
+    motif_perte = models.TextField(blank=True)
+    date_premier_contact = models.DateField(null=True, blank=True)
+    date_creation = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "prospect"
+        verbose_name_plural = "prospects"
+        ordering = ["-date_creation"]
+
+    def __str__(self):
+        return f"{self.nom} ({self.produit})"
+
+
+class Affectation(models.Model):
+    """Affectation d'un commercial à un produit, avec son historique."""
+
+    utilisateur = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="affectations"
+    )
+    produit = models.ForeignKey(Produit, on_delete=models.CASCADE, related_name="affectations")
+    campagne = models.ForeignKey(
+        Campagne,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="affectations",
+    )
+    date_debut = models.DateField()
+    date_fin = models.DateField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "affectation"
+        verbose_name_plural = "affectations"
+        ordering = ["-date_debut"]
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(date_fin__isnull=True) | Q(date_fin__gte=F("date_debut")),
+                name="affectation_dates_coherentes",
+            ),
+        ]
+
+    @property
+    def en_cours(self):
+        return self.date_fin is None
+
+    def __str__(self):
+        return f"{self.utilisateur} → {self.produit}"
