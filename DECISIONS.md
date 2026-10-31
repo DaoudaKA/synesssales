@@ -29,3 +29,17 @@ Ce fichier garde la trace des décisions du projet : quoi, quand, qui, et avec q
 - Un compte suspendu ne peut pas se connecter (`is_active` dérivé du statut).
 - `SECURE_HSTS_PRELOAD` non activé : décision irréversible, à prendre quand le domaine de production existe.
 - Suppression d'un chef d'équipe ou d'une équipe : pas de suppression en cascade (`SET_NULL`), pour ne perdre ni équipe ni utilisateur.
+
+
+| 7 | 2026-10-30 | PostgreSQL 18 installé sur le poste de développement ; PostgreSQL 16 pour la CI et Docker | Daouda KA | Décidé | À aligner avant la livraison |
+| 8 | 2026-10-30 | Utilisateur personnalisé (connexion par e-mail), déclaré avant les premières migrations métier | Daouda KA | Décidé | Changer de modèle utilisateur plus tard serait très coûteux |
+| 9 | 2026-10-30 | `PermissionMetier` : nom choisi pour ne pas confondre avec la `Permission` interne de Django | Daouda KA | Décidé | Matrice de l'annexe G à charger dans ce modèle (jalon 1) |
+| 10 | 2026-10-30 | Un compte suspendu ne peut pas se connecter (`is_active` dérivé du statut) | Daouda KA | Décidé | |
+| 11 | 2026-10-30 | `SECURE_HSTS_PRELOAD` non activé | Daouda KA | Décidé | Irréversible : à décider quand le domaine de production existe |
+| 12 | 2026-10-31 | Suppression d'un chef d'équipe ou d'une équipe : pas de suppression en cascade (`SET_NULL`) | Daouda KA | Décidé | On ne perd ni équipe ni utilisateur |
+| 13 | 2026-10-31 | `PROTECT` sur les sources, produits, prospects et contrats | Daouda KA | Décidé | Une donnée référencée ne peut pas être supprimée par erreur : traçabilité |
+| 14 | 2026-10-31 | Une affectation terminée garde sa date de fin au lieu d'être supprimée | Daouda KA | Décidé | Conserve l'historique (cahier des charges, 6.4) |
+| 15 | 2026-10-31 | Un enregistrement vocal sans consentement est refusé par la base de données | Daouda KA | À valider par M. Sy | Dépend de la téléphonie et de la conformité (cahier des charges, chapitre 8) |
+| 16 | 2026-10-31 | Journal d'audit : modification et suppression d'une entrée interdites dans le modèle | Daouda KA | Décidé | Protection de base, à renforcer au jalon 1 (les opérations en masse ne sont pas bloquées) |
+| 17 | 2026-10-31 | Type de notification en texte libre | Daouda KA | Décidé | La liste des événements reste à valider avec SYNESS |
+| 18 | 2026-10-31 | Python 3.12 dans l'image Docker | Daouda KA | Décidé | Version visée par ruff et par le plan ; Django 5.2 la supporte |
