@@ -21,3 +21,4 @@ htmlcov/
 # Données réelles et sauvegardes : jamais dans le dépôt
 data/reel/
 *.dump
+media/

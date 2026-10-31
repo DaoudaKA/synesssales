@@ -83,5 +83,8 @@ USE_TZ = True
 # Fichiers statiques
 STATIC_URL = "static/"
 STATIC_ROOT = RACINE_PROJET / "staticfiles"
+# Fichiers envoyés (enregistrements) : hors du dépôt Git
+MEDIA_URL = "media/"
+MEDIA_ROOT = RACINE_PROJET / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
