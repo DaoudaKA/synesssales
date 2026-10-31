@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "applications.comptes",
     "applications.equipes",
     "applications.partenaires",
+    "applications.collecte",
 ]
 
 MIDDLEWARE = [
