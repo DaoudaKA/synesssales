@@ -5,7 +5,6 @@ from django.db import models
 
 class PermissionMetier(models.Model):
     """Un droit : une action sur une ressource, dans une portée donnée."""
-
     class Action(models.TextChoices):
         CONSULTER = "L", "Consulter"
         CREER = "C", "Créer"
@@ -17,6 +16,7 @@ class PermissionMetier(models.Model):
 
     class Portee(models.TextChoices):
         TOUTE = "toute", "Tout le périmètre"
+        PERIMETRE = "perimetre", "Son périmètre (équipe, produit, zone)"
         EQUIPE = "equipe", "Son équipe"
         PRODUIT = "produit", "Ses produits"
         ZONE = "zone", "Sa zone"
