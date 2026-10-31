@@ -1,6 +1,8 @@
 """Administration des partenaires."""
 from django.contrib import admin
 
+from applications.comptes.services import AdminJournalise
+
 from .models import Categorie, Contact, Localisation, Partenaire, ServicePropose
 
 
@@ -20,14 +22,14 @@ class ServiceInline(admin.TabularInline):
 
 
 @admin.register(Categorie)
-class CategorieAdmin(admin.ModelAdmin):
+class CategorieAdmin(AdminJournalise, admin.ModelAdmin):
     list_display = ["nom", "type", "categorie_parent"]
     list_filter = ["type"]
     search_fields = ["nom"]
 
 
 @admin.register(Partenaire)
-class PartenaireAdmin(admin.ModelAdmin):
+class PartenaireAdmin(AdminJournalise, admin.ModelAdmin):
     list_display = [
         "nom_commercial",
         "categorie",

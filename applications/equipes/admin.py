@@ -2,6 +2,7 @@
 from django.contrib import admin
 
 from applications.comptes.models import Utilisateur
+from applications.comptes.services import AdminJournalise
 
 from .models import Equipe
 
@@ -18,7 +19,7 @@ class MembreInline(admin.TabularInline):
 
 
 @admin.register(Equipe)
-class EquipeAdmin(admin.ModelAdmin):
+class EquipeAdmin(AdminJournalise, admin.ModelAdmin):
     list_display = ["nom", "chef_equipe", "date_creation"]
     search_fields = ["nom"]
     inlines = [MembreInline]
