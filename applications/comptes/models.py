@@ -119,3 +119,38 @@ class Utilisateur(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.nom} <{self.email}>"
+
+
+class JournalAudit(models.Model):
+    """Trace d'une action sensible : qui, quand, quoi, sur quel objet.
+
+    Une entrée ne se modifie ni ne se supprime jamais.
+    """
+
+    utilisateur = models.ForeignKey(
+        Utilisateur,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="actions_journalisees",
+    )
+    action = models.CharField(max_length=80)
+    ressource = models.CharField(max_length=120)
+    objet_id = models.CharField(max_length=64, blank=True)
+    detail = models.TextField(blank=True)
+    date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "entrée du journal d'audit"
+        verbose_name_plural = "journal d'audit"
+        ordering = ["-date"]
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            raise PermissionError("Une entrée du journal d'audit ne se modifie pas.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise PermissionError("Une entrée du journal d'audit ne se supprime pas.")
+
+    def __str__(self):
+        return f"{self.date:%d/%m/%Y %H:%M} — {self.action} — {self.ressource}"
