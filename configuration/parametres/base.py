@@ -48,7 +48,7 @@ ROOT_URLCONF = "configuration.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [RACINE_PROJET / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -75,6 +75,11 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 # Utilisateur personnalisé : connexion par e-mail
 AUTH_USER_MODEL = "comptes.Utilisateur"
+
+# Connexion
+LOGIN_URL = "connexion"
+LOGIN_REDIRECT_URL = "accueil"
+LOGOUT_REDIRECT_URL = "connexion"
 # Langue et fuseau horaire
 LANGUAGE_CODE = "fr-fr"
 TIME_ZONE = "Africa/Dakar"
