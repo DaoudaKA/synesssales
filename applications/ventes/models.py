@@ -185,3 +185,132 @@ class Affectation(models.Model):
 
     def __str__(self):
         return f"{self.utilisateur} → {self.produit}"
+
+
+class Activite(models.Model):
+    """Une interaction avec un prospect : appel, visite, message..."""
+
+    class Type(models.TextChoices):
+        APPEL = "appel", "Appel"
+        VISITE = "visite", "Visite"
+        MESSAGE = "message", "Message"
+        PRESENTATION = "presentation", "Présentation"
+        PROPOSITION = "proposition", "Proposition"
+
+    prospect = models.ForeignKey(Prospect, on_delete=models.CASCADE, related_name="activites")
+    auteur = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="activites",
+    )
+    type = models.CharField(max_length=14, choices=Type.choices)
+    date = models.DateTimeField()
+    duree_minutes = models.PositiveIntegerField(null=True, blank=True)
+    resultat = models.TextField(blank=True)
+    objections = models.TextField(blank=True)
+    script = models.ForeignKey(
+        Script,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="activites",
+    )
+
+    class Meta:
+        verbose_name = "activité"
+        verbose_name_plural = "activités"
+        ordering = ["-date"]
+
+    def __str__(self):
+        return f"{self.get_type_display()} — {self.prospect}"
+
+
+class Tache(models.Model):
+    """Une action à faire : relance, rendez-vous, envoi d'une proposition."""
+
+    class Type(models.TextChoices):
+        RELANCE = "relance", "Relance"
+        RENDEZ_VOUS = "rdv", "Rendez-vous"
+        PROPOSITION = "proposition", "Envoi d'une proposition"
+
+    class Statut(models.TextChoices):
+        A_FAIRE = "a_faire", "À faire"
+        FAITE = "faite", "Faite"
+        ANNULEE = "annulee", "Annulée"
+
+    prospect = models.ForeignKey(Prospect, on_delete=models.CASCADE, related_name="taches")
+    responsable = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="taches",
+    )
+    type = models.CharField(max_length=14, choices=Type.choices)
+    echeance = models.DateTimeField()
+    statut = models.CharField(max_length=8, choices=Statut.choices, default=Statut.A_FAIRE)
+
+    class Meta:
+        verbose_name = "tâche"
+        verbose_name_plural = "tâches"
+        ordering = ["echeance"]
+
+    def __str__(self):
+        return f"{self.get_type_display()} — {self.prospect}"
+
+
+class Contrat(models.Model):
+    """Un contrat conclu avec un prospect, soumis à validation par un rôle habilité."""
+
+    class StatutValidation(models.TextChoices):
+        SOUMIS = "soumis", "Soumis"
+        VALIDE = "valide", "Validé"
+        REFUSE = "refuse", "Refusé"
+
+    prospect = models.ForeignKey(Prospect, on_delete=models.PROTECT, related_name="contrats")
+    date_signature = models.DateField(null=True, blank=True)
+    statut_validation = models.CharField(
+        max_length=8, choices=StatutValidation.choices, default=StatutValidation.SOUMIS
+    )
+    motif_refus = models.TextField(blank=True)
+    valide_par = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="contrats_valides",
+    )
+
+    class Meta:
+        verbose_name = "contrat"
+        verbose_name_plural = "contrats"
+        ordering = ["-date_signature"]
+
+    def __str__(self):
+        return f"Contrat — {self.prospect}"
+
+
+class EnregistrementVocal(models.Model):
+    """Enregistrement d'une activité, conservé seulement avec consentement."""
+
+    activite = models.OneToOneField(
+        Activite, on_delete=models.CASCADE, related_name="enregistrement"
+    )
+    fichier = models.FileField(upload_to="enregistrements/")
+    duree_secondes = models.PositiveIntegerField(null=True, blank=True)
+    consentement = models.BooleanField(default=False)
+    date_expiration = models.DateField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "enregistrement vocal"
+        verbose_name_plural = "enregistrements vocaux"
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(consentement=True),
+                name="enregistrement_avec_consentement",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Enregistrement — {self.activite}"
