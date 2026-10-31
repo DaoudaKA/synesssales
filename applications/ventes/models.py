@@ -88,6 +88,26 @@ class Script(models.Model):
         return f"{self.produit} — version {self.version}"
 
 
+class ProspectQuerySet(models.QuerySet):
+    """Requêtes sur les prospects, filtrées selon les droits de la matrice."""
+
+    def visible_to(self, utilisateur):
+        # Import local : évite une dépendance circulaire entre les applications.
+        from applications.comptes.permissions import portees
+
+        accordees = portees(utilisateur, "Prospects", "L")
+        if "toute" in accordees:
+            return self
+        conditions = Q(pk__in=[])
+        if "propre" in accordees:
+            conditions |= Q(commercial=utilisateur)
+        if "perimetre" in accordees:
+            if utilisateur.equipe_id is not None:
+                conditions |= Q(equipe_id=utilisateur.equipe_id)
+            conditions |= Q(equipe__chef_equipe=utilisateur)
+        return self.filter(conditions)
+
+
 class Prospect(models.Model):
     """Un prospect : une personne ou une entreprise à convaincre pour un produit."""
 
@@ -141,6 +161,7 @@ class Prospect(models.Model):
     motif_perte = models.TextField(blank=True)
     date_premier_contact = models.DateField(null=True, blank=True)
     date_creation = models.DateTimeField(auto_now_add=True)
+    objects = ProspectQuerySet.as_manager()
 
     class Meta:
         verbose_name = "prospect"
