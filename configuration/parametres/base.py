@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "applications.partenaires",
     "applications.collecte",
     "applications.ventes",
+    "applications.notifications",
 ]
 
 MIDDLEWARE = [
