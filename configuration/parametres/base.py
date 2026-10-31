@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "applications.noyau",
     "applications.comptes",
     "applications.equipes",
+    "applications.partenaires",
 ]
 
 MIDDLEWARE = [
