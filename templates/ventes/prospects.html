@@ -11,7 +11,7 @@
     <tbody>
       {% for prospect in prospects %}
         <tr>
-          <td>{{ prospect.nom }}</td>
+          <td><a href="{% url 'prospect' prospect.pk %}">{{ prospect.nom }}</a></td>
           <td>{{ prospect.produit }}</td>
           <td>{{ prospect.commercial.nom|default:"—" }}</td>
           <td>{{ prospect.equipe|default:"—" }}</td>
