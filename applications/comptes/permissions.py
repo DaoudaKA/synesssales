@@ -45,3 +45,16 @@ def restreindre(queryset, utilisateur, ressource, proprietaire, equipe, chef_equ
             conditions |= Q(**{f"{equipe}_id": utilisateur.equipe_id})
         conditions |= Q(**{chef_equipe: utilisateur})
     return queryset.filter(conditions)
+
+def portees_consultation(utilisateur, ressource):
+    """Portées de consultation : créer ou modifier donne aussi le droit de lire."""
+    return (
+        portees(utilisateur, ressource, "L")
+        | portees(utilisateur, ressource, "C")
+        | portees(utilisateur, ressource, "M")
+    )
+
+
+def peut_consulter(utilisateur, ressource):
+    """Indique si l'utilisateur peut consulter la ressource, au sens ci-dessus."""
+    return bool(portees_consultation(utilisateur, ressource))
