@@ -27,7 +27,10 @@
     <tbody>
       {% for partenaire in partenaires %}
         <tr>
-          <td>{{ partenaire.nom_commercial }}</td>
+         <td>
+            {{ partenaire.nom_commercial }}
+            {% if peut_valider %} — <a href="{% url 'partenaire_verification' partenaire.pk %}">Vérifier</a>{% endif %}
+          </td>
           <td>{{ partenaire.categorie|default:"—" }}</td>
           <td>
             {% for localisation in partenaire.localisations.all %}{{ localisation.ville|default:localisation.pays }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}

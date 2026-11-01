@@ -3,16 +3,16 @@ from urllib.parse import urlencode
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from applications.collecte.models import AlerteDoublon
 from applications.comptes.permissions import a_le_droit, peut_consulter
 from applications.comptes.services import journaliser
 
-from .formulaires import PartenaireForm
+from .formulaires import PartenaireForm, VerificationForm
 from .models import Partenaire
-from .services import detecter_doublons
+from .services import detecter_doublons, verifier
 
 
 @login_required
@@ -70,3 +70,36 @@ def liste_doublons(request):
         statut=AlerteDoublon.Statut.OUVERTE
     ).select_related("partenaire_a", "partenaire_b")
     return render(request, "partenaires/doublons.html", {"alertes": alertes})
+
+
+
+
+@login_required
+def verifier_partenaire(request, pk):
+    """Contrôle d'une fiche : réservé au droit de validation de la matrice."""
+    if not a_le_droit(request.user, "Fiches partenaires", "V"):
+        raise PermissionDenied
+    partenaire = get_object_or_404(Partenaire, pk=pk)
+    formulaire = VerificationForm(request.POST or None)
+    if request.method == "POST" and formulaire.is_valid():
+        verification = verifier(
+            partenaire,
+            request.user,
+            formulaire.cleaned_data["resultat"],
+            formulaire.cleaned_data["commentaire"],
+        )
+        journaliser(
+            request.user,
+            "verification",
+            "Fiches partenaires",
+            partenaire.pk,
+                       f"Vérification de « {partenaire.nom_commercial} » : "
+            f"{verification.get_resultat_display()}",
+        )
+        return redirect(f"{reverse('partenaires')}?{urlencode({'q': partenaire.nom_commercial})}")
+    contexte = {
+        "partenaire": partenaire,
+        "formulaire": formulaire,
+        "verifications": partenaire.verifications.select_related("utilisateur"),
+    }
+    return render(request, "partenaires/verification.html", contexte)
