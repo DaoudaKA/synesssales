@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block titre %}Import CSV — SYNESS Sales{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>Importer des fiches partenaires</h1>
+  <p>
+    Colonnes reconnues : nom_commercial (obligatoire), categorie, pays, region, ville,
+    adresse, telephone, email, service. Maximum 1000 lignes, 2 Mo, encodage UTF-8.
+  </p>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ formulaire.as_p }}
+    <button type="submit">Importer</button>
+  </form>
+  {% if resultat %}
+    <h2>Résultat</h2>
+    <p>
+      {{ resultat.collecte.nb_fiches }} fiche(s) importée(s),
+      {{ resultat.collecte.nb_erreurs }} erreur(s).
+    </p>
+    {% if resultat.erreurs %}
+      <table>
+        <thead><tr><th>Ligne</th><th>Problème</th></tr></thead>
+        <tbody>
+          {% for numero, message in resultat.erreurs %}
+            <tr><td>{{ numero }}</td><td>{{ message }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  {% endif %}
+  <p><a href="{% url 'collectes' %}">Voir les collectes</a></p>
+</div>
+{% endblock %}

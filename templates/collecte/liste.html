@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titre %}Collectes — SYNESS Sales{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>Collectes</h1>
+  {% if peut_importer %}
+    <p><a href="{% url 'collecte_importer' %}">Importer un fichier CSV</a></p>
+  {% endif %}
+  <table>
+    <thead>
+      <tr><th>Source</th><th>Début</th><th>Statut</th><th>Fiches</th><th>Erreurs</th></tr>
+    </thead>
+    <tbody>
+      {% for collecte in collectes %}
+        <tr>
+          <td>{{ collecte.source.nom }}</td>
+          <td>{{ collecte.date_debut|date:"d/m/Y H:i" }}</td>
+          <td>{{ collecte.get_statut_display }}</td>
+          <td>{{ collecte.nb_fiches }}</td>
+          <td>{{ collecte.nb_erreurs }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5">Aucune collecte.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p><a href="{% url 'accueil' %}">Retour à l'accueil</a></p>
+</div>
+{% endblock %}
