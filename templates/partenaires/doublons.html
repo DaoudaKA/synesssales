@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block titre %}Doublons — SYNESS Sales{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>Doublons suspectés</h1>
+  <p>{{ alertes|length }} alerte(s) ouverte(s).</p>
+  <table>
+    <thead>
+      <tr><th>Fiche A</th><th>Fiche B</th><th>Ressemblance</th><th>Détectée le</th></tr>
+    </thead>
+    <tbody>
+      {% for alerte in alertes %}
+        <tr>
+          <td>{{ alerte.partenaire_a.nom_commercial }}</td>
+          <td>{{ alerte.partenaire_b.nom_commercial }}</td>
+          <td>{% widthratio alerte.score_similarite 1 100 %} %</td>
+          <td>{{ alerte.date_creation|date:"d/m/Y" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4">Aucun doublon suspecté.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p><a href="{% url 'partenaires' %}">Retour à la liste</a></p>
+</div>
+{% endblock %}
