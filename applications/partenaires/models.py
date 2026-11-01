@@ -24,6 +24,35 @@ class Categorie(models.Model):
         return self.nom
 
 
+
+class PartenaireQuerySet(models.QuerySet):
+    """Requêtes sur les fiches partenaires."""
+
+    def visible_to(self, utilisateur):
+        """Fiches visibles d'après la matrice (ressource « Fiches partenaires »).
+
+        Une fiche n'a ni propriétaire ni équipe : seule la portée « toute »
+        donne la liste. Les portées restreintes sont à préciser avec SYNESS.
+        """
+        from applications.comptes.permissions import portees_consultation
+
+        if "toute" in portees_consultation(utilisateur, "Fiches partenaires"):
+            return self.all()
+        return self.none()
+
+    def rechercher(self, terme):
+        """Recherche par nom, raison sociale, catégorie ou ville."""
+        terme = (terme or "").strip()
+        if not terme:
+            return self
+        return self.filter(
+            models.Q(nom_commercial__icontains=terme)
+            | models.Q(raison_sociale__icontains=terme)
+            | models.Q(categorie__nom__icontains=terme)
+            | models.Q(localisations__ville__icontains=terme)
+        ).distinct()
+
+
 class Partenaire(models.Model):
     """Fiche d'un partenaire potentiel ou actif."""
 
@@ -62,7 +91,7 @@ class Partenaire(models.Model):
     )
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
-
+    objects = PartenaireQuerySet.as_manager()
     class Meta:
         verbose_name = "partenaire"
         verbose_name_plural = "partenaires"
