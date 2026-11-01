@@ -50,3 +50,7 @@ Ce fichier garde la trace des décisions du projet : quoi, quand, qui, et avec q
 | 22 | 2026-10-31 | Journal d'audit branché sur l'administration (suppressions, modifications de droits), en lecture seule | Daouda KA | Décidé | Les exports et validations devront appeler `journaliser` quand leurs écrans existeront |
 | 23 | 2026-10-31 | Hachage de mot de passe léger pendant les tests uniquement | Daouda KA | Décidé | Tests passés de 142 s à environ 40 s |
 | 24 | 2026-10-31 | Police Lexend chargée depuis Google Fonts en développement | Daouda KA | À revoir avant la livraison | Héberger la police dans le projet : évite la dépendance externe et l'envoi de l'adresse IP des visiteurs à Google |
+
+
+| 25 | Sur les fiches partenaires, seule la portée « toute » donne la liste ; le `L*` du dernier rôle (Lecteur autorisé) donne une liste vide. | Une fiche n'a ni propriétaire ni équipe, donc la portée restreinte ne peut pas s'appliquer. À préciser avec SYNESS. |
+| 26 | Sur les fiches partenaires, créer ou modifier donne aussi le droit de consulter. | Le Responsable data a `CMVSE` sans `L` dans la matrice : sans cette règle, il ne verrait pas les fiches qu'il valide. À confirmer avec SYNESS. |
