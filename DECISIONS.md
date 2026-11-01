@@ -65,3 +65,9 @@ Ce fichier garde la trace des décisions du projet : quoi, quand, qui, et avec q
 
 #	Décision	Raison
 29	Une vérification ajoute toujours une ligne d’historique. Conforme donne « Vérifié », à corriger remet « À vérifier », rejeté donne « Rejeté » ; le commentaire est obligatoire hors conformité.
+
+33	L’import n’accepte que les sources aux conditions d’usage validées, contrôlé dans le formulaire et dans le service.	Règle du chapitre 4.7 : pas de collecte sans accord.
+34	Une ligne invalide est comptée et listée avec son numéro, les autres sont importées.	Un seul défaut ne doit pas bloquer tout un fichier.
+35	Chaque valeur importée garde sa provenance (source, collecte, champ, valeur, niveau « collecté »).	Traçabilité exigée par le cahier des charges.
+36	Limites d’import : 1 000 lignes, 2 Mo, UTF-8 ; pays « Sénégal » par défaut.	Protège le serveur ; à valider avec SYNESS.
+37	Les fiches importées passent par la détection des doublons ; réimporter un fichier crée donc des alertes.	Rien n’est rejeté en silence.
