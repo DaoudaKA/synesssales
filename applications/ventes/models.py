@@ -346,3 +346,49 @@ class EnregistrementVocal(models.Model):
 
     def __str__(self):
         return f"Enregistrement — {self.activite}"
+
+class ReaffectationProspect(models.Model):
+    """Trace d'un changement de commercial sur un prospect.
+
+    On n'écrase jamais l'ancien commercial : chaque changement ajoute une ligne.
+    """
+
+    prospect = models.ForeignKey(
+        Prospect, on_delete=models.CASCADE, related_name="reaffectations"
+    )
+    ancien_commercial = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",  # « + » : pas de relation inverse nécessaire
+    )
+    nouveau_commercial = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    ancienne_equipe = models.ForeignKey(
+        "equipes.Equipe", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    nouvelle_equipe = models.ForeignKey(
+        "equipes.Equipe", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    auteur = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="reaffectations_effectuees",
+    )
+    date = models.DateTimeField(auto_now_add=True)
+    motif = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "réaffectation de prospect"
+        verbose_name_plural = "réaffectations de prospects"
+        ordering = ["-date", "-id"]
+
+    def __str__(self):
+        return f"{self.prospect} : {self.ancien_commercial} → {self.nouveau_commercial}"
