@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block titre %}Partenaires — SYNESS Sales{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>Fiches partenaires</h1>
+  <form method="get">
+    <input type="search" name="q" value="{{ terme }}" placeholder="Nom, catégorie ou ville">
+    <select name="statut">
+      <option value="">Tous les statuts</option>
+      {% for valeur, libelle in statuts %}
+        <option value="{{ valeur }}"{% if valeur == statut %} selected{% endif %}>{{ libelle }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Rechercher</button>
+  </form>
+  <p>{{ partenaires|length }} fiche(s) visible(s) avec vos droits.</p>
+  <table>
+    <thead>
+      <tr><th>Partenaire</th><th>Catégorie</th><th>Villes</th><th>Vérification</th><th>Statut commercial</th></tr>
+    </thead>
+    <tbody>
+      {% for partenaire in partenaires %}
+        <tr>
+          <td>{{ partenaire.nom_commercial }}</td>
+          <td>{{ partenaire.categorie|default:"—" }}</td>
+          <td>
+            {% for localisation in partenaire.localisations.all %}{{ localisation.ville|default:localisation.pays }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}
+          </td>
+          <td>{{ partenaire.get_statut_verification_display }}</td>
+          <td>{{ partenaire.get_statut_commercial_display }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5">Aucune fiche.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p><a href="{% url 'accueil' %}">Retour à l'accueil</a></p>
+</div>
+{% endblock %}
