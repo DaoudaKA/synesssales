@@ -61,3 +61,7 @@ Ce fichier garde la trace des décisions du projet : quoi, quand, qui, et avec q
 27	Détection des doublons : noms normalisés comparés par difflib, seuil de 0,85, pas d’alerte si les villes renseignées sont toutes différentes.	Règle simple et testable ; seuil à valider avec SYNESS.
 
 28	Une alerte de doublon relie toujours la fiche la plus ancienne (A) à la plus récente (B).	La contrainte d’unicité porte sur la paire ordonnée.
+
+
+#	Décision	Raison
+29	Une vérification ajoute toujours une ligne d’historique. Conforme donne « Vérifié », à corriger remet « À vérifier », rejeté donne « Rejeté » ; le commentaire est obligatoire hors conformité.
