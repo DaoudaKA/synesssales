@@ -6,11 +6,13 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
+from applications.collecte.models import AlerteDoublon
 from applications.comptes.permissions import a_le_droit, peut_consulter
 from applications.comptes.services import journaliser
 
 from .formulaires import PartenaireForm
 from .models import Partenaire
+from .services import detecter_doublons
 
 
 @login_required
@@ -34,6 +36,7 @@ def liste_partenaires(request):
         "statut": statut,
         "statuts": Partenaire.StatutVerification.choices,
         "peut_creer": a_le_droit(request.user, "Fiches partenaires", "C"),
+        "peut_valider": a_le_droit(request.user, "Fiches partenaires", "V"),
     }
     return render(request, "partenaires/liste.html", contexte)
 
@@ -47,12 +50,23 @@ def nouveau_partenaire(request):
     formulaire = PartenaireForm(request.POST or None)
     if request.method == "POST" and formulaire.is_valid():
         partenaire = formulaire.enregistrer()
-        journaliser(
-            request.user,
-            "creation",
-            "Fiches partenaires",
-            partenaire.pk,
-            f"Création de la fiche « {partenaire.nom_commercial} »",
-        )
+        alertes = detecter_doublons(partenaire)
+        detail = f"Création de la fiche « {partenaire.nom_commercial} »"
+        if alertes:
+            detail += f" ({len(alertes)} doublon(s) suspecté(s))"
+        journaliser(request.user, "creation", "Fiches partenaires", partenaire.pk, detail)
+        if alertes and a_le_droit(request.user, "Fiches partenaires", "V"):
+            return redirect("doublons")
         return redirect(f"{reverse('partenaires')}?{urlencode({'q': partenaire.nom_commercial})}")
     return render(request, "partenaires/formulaire.html", {"formulaire": formulaire})
+
+
+@login_required
+def liste_doublons(request):
+    """Alertes de doublon encore ouvertes : réservé au droit de validation."""
+    if not a_le_droit(request.user, "Fiches partenaires", "V"):
+        raise PermissionDenied
+    alertes = AlerteDoublon.objects.filter(
+        statut=AlerteDoublon.Statut.OUVERTE
+    ).select_related("partenaire_a", "partenaire_b")
+    return render(request, "partenaires/doublons.html", {"alertes": alertes})

@@ -6,6 +6,9 @@
   {% if peut_creer %}
     <p><a href="{% url 'partenaire_nouveau' %}">Nouvelle fiche</a></p>
   {% endif %}
+  {% if peut_valider %}
+    <p><a href="{% url 'doublons' %}">Voir les doublons suspectés</a></p>
+  {% endif %}
   <form method="get">
     <input type="search" name="q" value="{{ terme }}" placeholder="Nom, catégorie ou ville">
     <select name="statut">
