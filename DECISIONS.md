@@ -43,3 +43,10 @@ Ce fichier garde la trace des décisions du projet : quoi, quand, qui, et avec q
 | 16 | 2026-10-31 | Journal d'audit : modification et suppression d'une entrée interdites dans le modèle | Daouda KA | Décidé | Protection de base, à renforcer au jalon 1 (les opérations en masse ne sont pas bloquées) |
 | 17 | 2026-10-31 | Type de notification en texte libre | Daouda KA | Décidé | La liste des événements reste à valider avec SYNESS |
 | 18 | 2026-10-31 | Python 3.12 dans l'image Docker | Daouda KA | Décidé | Version visée par ruff et par le plan ; Django 5.2 la supporte |
+
+| 19 | 2026-10-31 | Les droits viennent uniquement des rôles : un compte administrateur Django n'a pas de droit métier automatique, un compte suspendu n'en a aucun | Daouda KA | Décidé | La matrice reste la seule source de vérité |
+| 20 | 2026-10-31 | Périmètre « * » de la matrice appliqué comme l'équipe de la personne et les équipes qu'elle dirige | Daouda KA | À valider par M. Sy | Hiérarchie du responsable commercial, produit et zone non appliqués : question 5 du cahier des charges |
+| 21 | 2026-10-31 | La matrice de l'annexe G est chargée depuis un seul fichier (`matrice.py`) | Daouda KA | À valider par M. Sy | Le tableau est une proposition à relire par SYNESS ; un test vérifie le chargement, pas la justesse du tableau |
+| 22 | 2026-10-31 | Journal d'audit branché sur l'administration (suppressions, modifications de droits), en lecture seule | Daouda KA | Décidé | Les exports et validations devront appeler `journaliser` quand leurs écrans existeront |
+| 23 | 2026-10-31 | Hachage de mot de passe léger pendant les tests uniquement | Daouda KA | Décidé | Tests passés de 142 s à environ 40 s |
+| 24 | 2026-10-31 | Police Lexend chargée depuis Google Fonts en développement | Daouda KA | À revoir avant la livraison | Héberger la police dans le projet : évite la dépendance externe et l'envoi de l'adresse IP des visiteurs à Google |
