@@ -54,3 +54,10 @@ Ce fichier garde la trace des décisions du projet : quoi, quand, qui, et avec q
 
 | 25 | Sur les fiches partenaires, seule la portée « toute » donne la liste ; le `L*` du dernier rôle (Lecteur autorisé) donne une liste vide. | Une fiche n'a ni propriétaire ni équipe, donc la portée restreinte ne peut pas s'appliquer. À préciser avec SYNESS. |
 | 26 | Sur les fiches partenaires, créer ou modifier donne aussi le droit de consulter. | Le Responsable data a `CMVSE` sans `L` dans la matrice : sans cette règle, il ne verrait pas les fiches qu'il valide. À confirmer avec SYNESS. |
+
+
+
+#	Décision	Raison
+27	Détection des doublons : noms normalisés comparés par difflib, seuil de 0,85, pas d’alerte si les villes renseignées sont toutes différentes.	Règle simple et testable ; seuil à valider avec SYNESS.
+
+28	Une alerte de doublon relie toujours la fiche la plus ancienne (A) à la plus récente (B).	La contrainte d’unicité porte sur la paire ordonnée.
