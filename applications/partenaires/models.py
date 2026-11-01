@@ -37,7 +37,7 @@ class PartenaireQuerySet(models.QuerySet):
         from applications.comptes.permissions import portees_consultation
 
         if "toute" in portees_consultation(utilisateur, "Fiches partenaires"):
-            return self.all()
+            return self.filter(fusionnee_dans__isnull=True)
         return self.none()
 
     def rechercher(self, terme):
@@ -84,6 +84,16 @@ class Partenaire(models.Model):
         default=StatutVerification.A_VERIFIER,
     )
     date_derniere_verification = models.DateField(null=True, blank=True)
+
+    fusionnee_dans = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="fiches_fusionnees",
+    )
+
+
     statut_commercial = models.CharField(
         max_length=14,
         choices=StatutCommercial.choices,
