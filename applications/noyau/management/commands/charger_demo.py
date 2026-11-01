@@ -10,6 +10,7 @@ from django.core.management.base import BaseCommand
 from applications.comptes.matrice import charger_matrice
 from applications.comptes.models import Role
 from applications.equipes.models import Equipe
+from applications.partenaires.models import Categorie, Localisation, Partenaire
 from applications.ventes.models import Produit, Prospect
 from applications.ventes.services import affecter
 
@@ -83,6 +84,18 @@ class Command(BaseCommand):
                 if email == "commercial1@exemple.com":
                     affecter(utilisateur, assurance, datetime.date(2026, 1, 1))
                 affecter(utilisateur, produit, datetime.date(2026, 7, 1))
-
+        garage, _ = Categorie.objects.get_or_create(nom="Garage automobile")
+        fiches = [
+            ("Garage Teranga", "Dakar", Partenaire.StatutVerification.VERIFIE),
+            ("Auto Service Thiès", "Thiès", Partenaire.StatutVerification.A_VERIFIER),
+            ("Carrosserie Almadies", "Dakar", Partenaire.StatutVerification.A_VERIFIER),
+        ]
+        for nom, ville, statut in fiches:
+            fiche, cree = Partenaire.objects.get_or_create(
+                nom_commercial=nom,
+                defaults={"categorie": garage, "statut_verification": statut},
+            )
+            if cree:
+                Localisation.objects.create(partenaire=fiche, pays="Sénégal", ville=ville)
 
         self.stdout.write(self.style.SUCCESS("Données de démonstration chargées."))

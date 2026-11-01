@@ -13,10 +13,13 @@
     <p>Aucun rôle ne vous est attribué. Contactez un administrateur.</p>
   {% endif %}
   {% if peut_voir_prospects %}
-    <p><a href="{% url 'prospects' %}">Voir les prospects</a></p>
+    <p><a href="{% url 'prospects' %}">Voir les prospects</a></p>{% endif %}
       {% if peut_voir_affectations %}
     <p><a href="{% url 'affectations' %}">Voir les affectations</a></p>
   {% endif %}
+
+{% if peut_voir_partenaires %}
+    <p><a href="{% url 'partenaires' %}">Voir les fiches partenaires</a></p>
   {% endif %}
 </div>
 {% endblock %}
