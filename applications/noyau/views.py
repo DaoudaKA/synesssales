@@ -17,5 +17,6 @@ def accueil(request):
     contexte = {
         "roles": request.user.roles.all(),
         "peut_voir_prospects": a_le_droit(request.user, "Prospects", "L"),
+        "peut_voir_affectations": a_le_droit(request.user, "Équipes et affectations", "L"),
     }
     return render(request, "noyau/accueil.html", contexte)

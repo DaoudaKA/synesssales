@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block titre %}Affectations — SYNESS Sales{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>Affectations</h1>
+  <p>{{ affectations|length }} affectation(s) visible(s) avec vos droits.</p>
+  <table>
+    <thead>
+      <tr><th>Commercial</th><th>Produit</th><th>Campagne</th><th>Du</th><th>Au</th></tr>
+    </thead>
+    <tbody>
+      {% for affectation in affectations %}
+        <tr>
+          <td>{{ affectation.utilisateur.nom }}</td>
+          <td>{{ affectation.produit }}</td>
+          <td>{{ affectation.campagne|default:"—" }}</td>
+          <td>{{ affectation.date_debut|date:"d/m/Y" }}</td>
+          <td>
+            {% if affectation.date_fin %}{{ affectation.date_fin|date:"d/m/Y" }}
+            {% else %}en cours{% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5">Aucune affectation.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p><a href="{% url 'accueil' %}">Retour à l'accueil</a></p>
+</div>
+{% endblock %}

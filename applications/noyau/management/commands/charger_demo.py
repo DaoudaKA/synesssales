@@ -2,6 +2,8 @@
 
 À utiliser en développement seulement, jamais en production.
 """
+import datetime
+
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
@@ -9,6 +11,7 @@ from applications.comptes.matrice import charger_matrice
 from applications.comptes.models import Role
 from applications.equipes.models import Equipe
 from applications.ventes.models import Produit, Prospect
+from applications.ventes.services import affecter
 
 Utilisateur = get_user_model()
 
@@ -72,4 +75,14 @@ class Command(BaseCommand):
                     "equipe": equipes.get(nom_equipe),
                 },
             )
+
+        assurance, _ = Produit.objects.get_or_create(nom="Assurance auto")
+        for email, utilisateur in utilisateurs.items():
+            est_commercial = utilisateur.roles.filter(nom="Commercial").exists()
+            if est_commercial and not utilisateur.affectations.exists():
+                if email == "commercial1@exemple.com":
+                    affecter(utilisateur, assurance, datetime.date(2026, 1, 1))
+                affecter(utilisateur, produit, datetime.date(2026, 7, 1))
+
+
         self.stdout.write(self.style.SUCCESS("Données de démonstration chargées."))
