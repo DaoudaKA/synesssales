@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block titre %}Nouvelle fiche — SYNESS Sales{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>Nouvelle fiche partenaire</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ formulaire.as_p }}
+    <button type="submit">Enregistrer</button>
+  </form>
+  <p><a href="{% url 'partenaires' %}">Retour à la liste</a></p>
+</div>
+{% endblock %}

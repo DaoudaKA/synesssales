@@ -3,6 +3,9 @@
 {% block contenu %}
 <div class="carte">
   <h1>Fiches partenaires</h1>
+  {% if peut_creer %}
+    <p><a href="{% url 'partenaire_nouveau' %}">Nouvelle fiche</a></p>
+  {% endif %}
   <form method="get">
     <input type="search" name="q" value="{{ terme }}" placeholder="Nom, catégorie ou ville">
     <select name="statut">
