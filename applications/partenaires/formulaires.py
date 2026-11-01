@@ -2,6 +2,8 @@
 from django import forms
 from django.db import transaction
 
+from applications.collecte.models import Verification
+
 from .models import Contact, Localisation, Partenaire, ServicePropose
 
 
@@ -43,3 +45,27 @@ class PartenaireForm(forms.ModelForm):
         if donnees["service"]:
             ServicePropose.objects.create(partenaire=partenaire, libelle=donnees["service"])
         return partenaire
+
+
+
+
+class VerificationForm(forms.Form):
+    """Résultat d'un contrôle de fiche, avec commentaire si la fiche n'est pas conforme."""
+
+    resultat = forms.ChoiceField(label="Résultat", choices=Verification.Resultat.choices)
+    commentaire = forms.CharField(
+        label="Commentaire", widget=forms.Textarea(attrs={"rows": 3}), required=False
+    )
+
+    def clean(self):
+        donnees = super().clean()
+        resultat = donnees.get("resultat")
+        if (
+            resultat
+            and resultat != Verification.Resultat.CONFORME
+            and not donnees.get("commentaire", "").strip()
+        ):
+            self.add_error(
+                "commentaire", "Un commentaire est obligatoire si la fiche n'est pas conforme."
+            )
+        return donnees

@@ -3,7 +3,10 @@ import re
 import unicodedata
 from difflib import SequenceMatcher
 
-from applications.collecte.models import AlerteDoublon
+from django.db import transaction
+from django.utils import timezone
+
+from applications.collecte.models import AlerteDoublon, Verification
 
 from .models import Partenaire
 
@@ -48,3 +51,28 @@ def detecter_doublons(partenaire):
         if creee:
             nouvelles.append(alerte)
     return nouvelles
+
+
+
+STATUT_APRES_VERIFICATION = {
+    Verification.Resultat.CONFORME: Partenaire.StatutVerification.VERIFIE,
+    Verification.Resultat.A_CORRIGER: Partenaire.StatutVerification.A_VERIFIER,
+    Verification.Resultat.REJETE: Partenaire.StatutVerification.REJETE,
+}
+
+
+@transaction.atomic
+def verifier(partenaire, utilisateur, resultat, commentaire=""):
+    """Enregistre une vérification et met à jour le statut de la fiche."""
+    verification = Verification.objects.create(
+        partenaire=partenaire,
+        utilisateur=utilisateur,
+        resultat=resultat,
+        commentaire=commentaire,
+    )
+    partenaire.statut_verification = STATUT_APRES_VERIFICATION[resultat]
+    partenaire.date_derniere_verification = timezone.localdate()
+    partenaire.save(
+        update_fields=["statut_verification", "date_derniere_verification", "date_modification"]
+    )
+    return verification
