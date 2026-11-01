@@ -3,8 +3,10 @@ from urllib.parse import urlencode
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.views.decorators.http import require_POST
 
 from applications.collecte.models import AlerteDoublon
 from applications.comptes.permissions import a_le_droit, peut_consulter
@@ -12,7 +14,7 @@ from applications.comptes.services import journaliser
 
 from .formulaires import PartenaireForm, VerificationForm
 from .models import Partenaire
-from .services import detecter_doublons, verifier
+from .services import detecter_doublons, fusionner, rejeter, verifier
 
 
 @login_required
@@ -103,3 +105,48 @@ def verifier_partenaire(request, pk):
         "verifications": partenaire.verifications.select_related("utilisateur"),
     }
     return render(request, "partenaires/verification.html", contexte)
+
+
+
+
+def _alerte_ouverte_a_traiter(request, pk):
+    """Contrôle le droit de validation et retourne l'alerte encore ouverte."""
+    if not a_le_droit(request.user, "Fiches partenaires", "V"):
+        raise PermissionDenied
+    return get_object_or_404(
+        AlerteDoublon.objects.select_related("partenaire_a", "partenaire_b"),
+        pk=pk,
+        statut=AlerteDoublon.Statut.OUVERTE,
+    )
+
+
+@login_required
+@require_POST
+def rejeter_doublon(request, pk):
+    """L'alerte est écartée : les deux fiches restent distinctes."""
+    alerte = _alerte_ouverte_a_traiter(request, pk)
+    rejeter(alerte)
+    journaliser(
+        request.user, "rejet_doublon", "Fiches partenaires", alerte.pk, f"Doublon écarté : {alerte}"
+    )
+    return redirect("doublons")
+
+
+@login_required
+@require_POST
+def fusionner_doublon(request, pk):
+    """Fusionne les deux fiches en gardant celle choisie (« a » ou « b »)."""
+    alerte = _alerte_ouverte_a_traiter(request, pk)
+    garder = request.POST.get("conservee")
+    if garder not in ("a", "b"):
+        return HttpResponseBadRequest("Fiche à conserver invalide.")
+    absorbee = alerte.partenaire_b if garder == "a" else alerte.partenaire_a
+    conservee = fusionner(alerte, garder)
+    journaliser(
+        request.user,
+        "fusion",
+        "Fiches partenaires",
+        conservee.pk,
+        f"« {absorbee.nom_commercial} » fusionnée dans « {conservee.nom_commercial} »",
+    )
+    return redirect("doublons")

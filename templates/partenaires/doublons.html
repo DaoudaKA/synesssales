@@ -6,7 +6,7 @@
   <p>{{ alertes|length }} alerte(s) ouverte(s).</p>
   <table>
     <thead>
-      <tr><th>Fiche A</th><th>Fiche B</th><th>Ressemblance</th><th>Détectée le</th></tr>
+      <tr><th>Fiche A</th><th>Fiche B</th><th>Ressemblance</th><th>Détectée le</th><th>Actions</th></tr>
     </thead>
     <tbody>
       {% for alerte in alertes %}
@@ -15,9 +15,20 @@
           <td>{{ alerte.partenaire_b.nom_commercial }}</td>
           <td>{% widthratio alerte.score_similarite 1 100 %} %</td>
           <td>{{ alerte.date_creation|date:"d/m/Y" }}</td>
+          <td>
+            <form method="post" action="{% url 'doublon_fusion' alerte.pk %}">
+              {% csrf_token %}
+              <button type="submit" name="conservee" value="a">Garder la fiche A</button>
+              <button type="submit" name="conservee" value="b">Garder la fiche B</button>
+            </form>
+            <form method="post" action="{% url 'doublon_rejet' alerte.pk %}">
+              {% csrf_token %}
+              <button type="submit">Ce ne sont pas des doublons</button>
+            </form>
+          </td>
         </tr>
       {% empty %}
-        <tr><td colspan="4">Aucun doublon suspecté.</td></tr>
+        <tr><td colspan="5">Aucun doublon suspecté.</td></tr>
       {% endfor %}
     </tbody>
   </table>
