@@ -21,5 +21,10 @@
 {% if peut_voir_partenaires %}
     <p><a href="{% url 'partenaires' %}">Voir les fiches partenaires</a></p>
   {% endif %}
+
+    {% if peut_voir_collectes %}
+    <p><a href="{% url 'collectes' %}">Voir les collectes</a></p>
+  {% endif %}
+
 </div>
 {% endblock %}

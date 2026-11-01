@@ -7,6 +7,7 @@ import datetime
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
+from applications.collecte.models import SourceDonnees
 from applications.comptes.matrice import charger_matrice
 from applications.comptes.models import Role
 from applications.equipes.models import Equipe
@@ -97,5 +98,16 @@ class Command(BaseCommand):
             )
             if cree:
                 Localisation.objects.create(partenaire=fiche, pays="Sénégal", ville=ville)
+
+
+                # Une source importable et une source dont les conditions ne sont pas validées.
+        SourceDonnees.objects.get_or_create(
+            nom="Annuaire de démonstration",
+            defaults={"type": "fichier", "conditions_validees": True},
+        )
+        SourceDonnees.objects.get_or_create(
+            nom="Site non vérifié",
+            defaults={"type": "site public", "conditions_validees": False},
+        )
 
         self.stdout.write(self.style.SUCCESS("Données de démonstration chargées."))

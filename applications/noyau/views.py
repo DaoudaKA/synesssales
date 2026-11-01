@@ -19,5 +19,6 @@ def accueil(request):
         "peut_voir_prospects": a_le_droit(request.user, "Prospects", "L"),
         "peut_voir_affectations": a_le_droit(request.user, "Équipes et affectations", "L"),
         "peut_voir_partenaires": peut_consulter(request.user, "Fiches partenaires"),
+        "peut_voir_collectes": peut_consulter(request.user, "Collectes et imports"),
     }
     return render(request, "noyau/accueil.html", contexte)
