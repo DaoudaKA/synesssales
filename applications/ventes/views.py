@@ -8,7 +8,7 @@ from applications.comptes.services import journaliser
 
 from .formulaires import ReaffectationForm
 from .models import Affectation, Prospect
-from .services import commerciaux_cibles, reaffecter_prospect
+from .services import commerciaux_cibles, contacts_en_double, reaffecter_prospect
 
 
 @login_required
@@ -84,5 +84,6 @@ def fiche_prospect(request, pk):
         ),
         "activites": prospect.activites.select_related("auteur")[:10],
         "taches": prospect.taches.filter(statut="a_faire").select_related("responsable"),
+        "doublons": contacts_en_double(prospect),
     }
     return render(request, "ventes/prospect.html", contexte)

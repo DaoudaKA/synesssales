@@ -13,6 +13,24 @@
     <p>Fiche partenaire liée : {{ prospect.partenaire.nom_commercial }}</p>
   {% endif %}
 
+
+    {% if doublons %}
+    <div style="border-left:4px solid #E9E60B;background:#fffde7;padding:.5rem 1rem;">
+      <strong>Contact multiple possible.</strong>
+      Ce client semble déjà suivi par :
+      <ul>
+        {% for autre, motif in doublons %}
+          <li>
+            {{ autre.commercial.nom }} ({{ autre.equipe|default:"sans équipe" }}),
+            statut « {{ autre.get_statut_display }} » — {{ motif }}
+          </li>
+        {% endfor %}
+      </ul>
+      Vérifie avec cette personne avant de contacter le client.
+    </div>
+  {% endif %}
+
+
   {% if formulaire %}
     <h2>Réaffecter</h2>
     <form method="post">
