@@ -122,3 +122,10 @@ Ce fichier garde la trace des décisions du projet : quoi, quand, qui, et avec q
 67	L’auteur d’une action n’est jamais notifié de sa propre action. L’ancien commercial d’un prospect réaffecté est prévenu sans lien, car il n’a peut-être plus accès à la fiche.
 68	Un contrat soumis alerte les personnes ayant le droit V sur les contrats (toute portée, ou périmètre si le prospect est dans leur équipe), sauf le commercial propriétaire. Le lien mène à « Contrats à valider » (cohérent avec la décision 55).
 69	Les alertes de validation et de décision portent une clé de regroupement par contrat : un événement rejoué ne crée pas de doublon. Un refus est de priorité haute, une validation de priorité moyenne.
+
+
+
+70	La détection des relances en retard est une commande (verifier_relances) à planifier chaque jour, pas un traitement déclenché par l’ouverture d’une page : le résultat ne dépend pas de qui se connecte. La logique est dans notifications/relances.py pour rester testable.
+71	Le commercial est alerté dès que l’échéance est dépassée. Le chef de l’équipe du responsable est alerté quand le retard atteint le seuil (réglage SEUIL_ESCALADE_RELANCES_JOURS, 2 jours par défaut, modifiable à l’appel par --seuil-jours). Valeur à confirmer avec SYNESS.
+72	Une alerte et une escalade par tâche (clés relance-en-retard:<id> et relance-escaladee:<id>) : la commande peut être relancée à volonté sans doublon. Une tâche faite ou annulée n’alerte plus.
+73	Un responsable sans équipe ou sans chef n’est pas escaladé, et un chef n’est pas escaladé à lui-même. La commande compte et signale les cas « sans chef » pour corriger l’organisation.
