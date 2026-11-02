@@ -15,4 +15,11 @@ urlpatterns = [
     path("prospects/<int:pk>/taches/nouvelle/", views.nouvelle_tache, name="nouvelle_tache"),
     path("taches/<int:pk>/faite/", views.tache_faite, name="tache_faite"),
     path("relances/", views.mes_relances, name="relances"),
+    path(
+        "prospects/<int:pk>/contrats/nouveau/",
+        views.nouveau_contrat,
+        name="nouveau_contrat",
+    ),
+    path("contrats/a-valider/", views.contrats_a_valider, name="contrats_a_valider"),
+    path("contrats/<int:pk>/decision/", views.decision_contrat, name="decision_contrat"),
 ]

@@ -1,6 +1,7 @@
 """Écrans du pilotage commercial."""
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -8,15 +9,18 @@ from django.views.decorators.http import require_POST
 from applications.comptes.permissions import a_le_droit, portees
 from applications.comptes.services import journaliser
 
-from .formulaires import ActiviteForm, ReaffectationForm, TacheForm
-from .models import Affectation, Prospect, Tache
+from .formulaires import ActiviteForm, ContratForm, ReaffectationForm, RefusForm, TacheForm
+from .models import Affectation, Contrat, Prospect, Tache
 from .services import (
     commerciaux_cibles,
     contacts_en_double,
     enregistrer_activite,
     planifier_tache,
     reaffecter_prospect,
+    refuser_contrat,
+    soumettre_contrat,
     terminer_tache,
+    valider_contrat,
 )
 
 
@@ -28,8 +32,12 @@ def liste_prospects(request):
     prospects = Prospect.objects.visible_to(request.user).select_related(
         "produit", "commercial", "equipe"
     )
-    return render(request, "ventes/prospects.html", {"prospects": prospects})
-
+    contexte = {
+        "prospects": prospects,
+        # Affiche le lien « Contrats à valider » aux seuls validateurs.
+        "peut_valider_contrats": a_le_droit(request.user, "Contrats", "V"),
+    }
+    return render(request, "ventes/prospects.html", contexte)
 
 
 @login_required
@@ -41,7 +49,6 @@ def liste_affectations(request):
         "utilisateur", "produit", "campagne"
     )
     return render(request, "ventes/affectations.html", {"affectations": affectations})
-
 
 
 def _peut_reaffecter(utilisateur):
@@ -96,18 +103,20 @@ def fiche_prospect(request, pk):
         "doublons": contacts_en_double(prospect),
         "peut_consigner": _peut_agir(request.user, prospect, "C"),
         "peut_cloturer": _peut_agir(request.user, prospect, "M"),
+        "contrats": prospect.contrats.all(),
+        "voir_contrats": a_le_droit(request.user, "Contrats", "L"),
+        "peut_soumettre": _peut_agir(request.user, prospect, "C", "Contrats"),
+        "peut_valider": bool(portees(request.user, "Contrats", "V")),
     }
     return render(request, "ventes/prospect.html", contexte)
 
 
-
-
-def _peut_agir(utilisateur, prospect, droit):
-    """Droit « C » (créer) ou « M » (modifier) sur les activités et relances d'un prospect.
+def _peut_agir(utilisateur, prospect, droit, ressource="Activités et relances"):
+    """Droit « C » (créer) ou « M » (modifier) d'une ressource, sur un prospect donné.
 
     Le droit vient de la matrice ; la portée dit sur quels prospects il s'applique.
     """
-    etendues = portees(utilisateur, "Activités et relances", droit)
+    etendues = portees(utilisateur, ressource, droit)
     if "toute" in etendues:
         return True
     if "perimetre" in etendues:
@@ -116,14 +125,14 @@ def _peut_agir(utilisateur, prospect, droit):
     return "propre" in etendues and prospect.commercial_id == utilisateur.pk
 
 
-def _prospect_pour_action(request, pk, droit):
+def _prospect_pour_action(request, pk, droit, ressource="Activités et relances"):
     """Prospect visible par l'utilisateur et sur lequel il a le droit d'agir.
 
     Hors périmètre : 404 (on ne révèle pas son existence). Sans le droit : 403.
     """
     visibles = Prospect.objects.visible_to(request.user)
     prospect = get_object_or_404(visibles, pk=pk)
-    if not _peut_agir(request.user, prospect, droit):
+    if not _peut_agir(request.user, prospect, droit, ressource):
         raise PermissionDenied
     return prospect
 
@@ -211,3 +220,96 @@ def mes_relances(request):
         "peut_cloturer": bool(portees(request.user, "Activités et relances", "M")),
     }
     return render(request, "ventes/relances.html", contexte)
+
+
+def _peut_valider(utilisateur, contrat):
+    """Droit « V » (valider) de la matrice, dans son périmètre, sur un autre que soi."""
+    etendues = portees(utilisateur, "Contrats", "V")
+    if not etendues:
+        return False
+    # Séparation des rôles : on ne valide pas le contrat de ses propres prospects.
+    if contrat.prospect.commercial_id == utilisateur.pk:
+        return False
+    if "toute" in etendues:
+        return True
+    return Prospect.objects.visible_to(utilisateur).filter(pk=contrat.prospect_id).exists()
+
+
+@login_required
+def nouveau_contrat(request, pk):
+    """Formulaire de soumission d'un contrat sur un prospect."""
+    prospect = _prospect_pour_action(request, pk, "C", "Contrats")
+    formulaire = ContratForm(request.POST or None, prospect=prospect)
+    if request.method == "POST" and formulaire.is_valid():
+        contrat = soumettre_contrat(prospect, formulaire.cleaned_data["date_signature"])
+        journaliser(
+            request.user,
+            "creation",
+            "Contrats",
+            contrat.pk,
+            f"Contrat soumis — « {prospect.nom} »",
+        )
+        return redirect("prospect", pk=prospect.pk)
+    contexte = {
+        "titre": "Soumettre un contrat",
+        "bouton": "Soumettre à validation",
+        "prospect": prospect,
+        "formulaire": formulaire,
+    }
+    return render(request, "ventes/formulaire.html", contexte)
+
+
+@login_required
+def contrats_a_valider(request):
+    """Contrats soumis qui attendent une décision, dans le périmètre du validateur."""
+    etendues = portees(request.user, "Contrats", "V")
+    if not etendues:
+        raise PermissionDenied
+    contrats = Contrat.objects.filter(
+        statut_validation=Contrat.StatutValidation.SOUMIS
+    ).select_related("prospect", "prospect__commercial", "prospect__equipe")
+    if "toute" not in etendues:
+        contrats = contrats.filter(prospect__in=Prospect.objects.visible_to(request.user))
+    # Ses propres prospects ne sont pas à valider par soi-même.
+    contrats = contrats.exclude(prospect__commercial=request.user)
+    return render(request, "ventes/contrats_a_valider.html", {"contrats": contrats})
+
+
+@login_required
+def decision_contrat(request, pk):
+    """Examen d'un contrat soumis : validation, ou refus avec motif."""
+    contrat = get_object_or_404(
+        Contrat.objects.select_related("prospect__commercial", "prospect__equipe"), pk=pk
+    )
+    if not _peut_valider(request.user, contrat):
+        raise PermissionDenied
+    formulaire_refus = RefusForm()
+    if request.method == "POST":
+        # Un contrat déjà décidé est définitif : on ne le redécide pas.
+        if contrat.statut_validation != Contrat.StatutValidation.SOUMIS:
+            return redirect("contrats_a_valider")
+        decision = request.POST.get("decision")
+        nom = contrat.prospect.nom
+        if decision == "valider":
+            valider_contrat(contrat, request.user)
+            journaliser(
+                request.user, "validation", "Contrats", contrat.pk, f"Contrat validé — « {nom} »"
+            )
+            return redirect("contrats_a_valider")
+        if decision == "refuser":
+            formulaire_refus = RefusForm(request.POST)
+            if formulaire_refus.is_valid():
+                motif = formulaire_refus.cleaned_data["motif"]
+                refuser_contrat(contrat, request.user, motif)
+                journaliser(
+                    request.user,
+                    "refus",
+                    "Contrats",
+                    contrat.pk,
+                    f"Contrat refusé — « {nom} » : {motif}",
+                )
+                return redirect("contrats_a_valider")
+        else:
+            return HttpResponseBadRequest("Décision inconnue.")
+    contexte = {"contrat": contrat, "formulaire_refus": formulaire_refus}
+    return render(request, "ventes/contrat.html", contexte)
