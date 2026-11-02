@@ -97,3 +97,10 @@ Ce fichier garde la trace des décisions du projet : quoi, quand, qui, et avec q
 52	Un seul contrat « soumis » ou « validé » par prospect ; après un refus, un nouveau contrat peut être soumis.	Évite les doublons de contrat sans bloquer la reprise après correction.
 53	Un contrat décidé est définitif et on ne valide pas le contrat de ses propres prospects.	Traçabilité des décisions et séparation des rôles.
 54	La date de signature d’un contrat ne peut pas être dans le futur.
+
+
+56	Un objectif = produit + équipe + commercial optionnel + cible en contrats validés + période. Sans commercial, il est collectif.	Couvre les objectifs individuels et collectifs du plan avec un seul modèle.
+57	La réalisation compte les contrats validés, signés pendant la période, sur le produit, pour les prospects actuellement suivis par le commercial (individuel) ou rattachés à l’équipe (collectif).	Indicateur simple et vérifiable. Limite connue : une réaffectation déplace le crédit vers le nouveau commercial. À valider avec SYNESS.
+58	Le commercial d’un objectif doit appartenir à son équipe. Deux objectifs du même porteur (commercial ou équipe), sur le même produit, ne se chevauchent pas.	Évite les objectifs incohérents ou comptés deux fois.
+59	Création et modification : Responsable commercial (portée « toute »). Consultation : selon la portée (équipe pour chef d’équipe, commercial et lecteur ; tout pour direction et analyste). La suppression (lettre S) n’est pas proposée.	Ligne « Campagnes et objectifs » de la matrice. On garde l’historique des objectifs.
+60	Un seul indicateur de réalisation pour l’instant : les contrats validés.	Autres indicateurs (appels, rendez-vous) à définir avec SYNESS.
