@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block titre %}SYNESS Sales{% endblock %}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -24,6 +24,11 @@
     header form { display: inline; margin: 0; }
     header button { margin: 0; background: var(--jaune); color: var(--violet); }
     header button:hover { background: var(--blanc); }
+    .droite { display: flex; align-items: center; gap: 16px; }
+    .cloche { color: var(--blanc); text-decoration: none; font-weight: 600; }
+    .pastille { display: inline-block; min-width: 20px; padding: 0 6px; margin-left: 4px;
+                border-radius: 10px; background: var(--jaune); color: var(--violet);
+                text-align: center; font-size: .85em; }
     main { max-width: 640px; margin: 32px auto; padding: 0 16px; }
     .carte { background: var(--blanc); border-radius: 8px; padding: 24px;
              border-top: 4px solid var(--jaune); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
@@ -40,6 +45,7 @@
     table { width: 100%; border-collapse: collapse; }
     th, td { text-align: left; padding: 8px; border-bottom: 1px solid #E3E1F5; }
     th { color: var(--violet); }
+    .non-lue { font-weight: 700; }
     .erreur { color: #B42318; }
   </style>
 </head>
@@ -47,10 +53,15 @@
   <header>
     <strong>SYNESS Sales</strong>
     {% if user.is_authenticated %}
-      <form method="post" action="{% url 'deconnexion' %}">
-        {% csrf_token %}
-        <button type="submit">Se déconnecter</button>
-      </form>
+      <div class="droite">
+        <a class="cloche" href="{% url 'notifications' %}">
+          Notifications{% if nombre_notifications %}<span class="pastille">{{ nombre_notifications }}</span>{% endif %}
+        </a>
+        <form method="post" action="{% url 'deconnexion' %}">
+          {% csrf_token %}
+          <button type="submit">Se déconnecter</button>
+        </form>
+      </div>
     {% endif %}
   </header>
   <main>

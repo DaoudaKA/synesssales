@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block titre %}Mes notifications — SYNESS Sales{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>Mes notifications</h1>
+  {% if nombre_notifications %}
+    <form method="post" action="{% url 'notifications_tout_lu' %}">
+      {% csrf_token %}
+      <button type="submit">Tout marquer comme lu</button>
+    </form>
+  {% endif %}
+  <table>
+    <thead>
+      <tr><th>Date</th><th>Priorité</th><th>Message</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      {% for notification in notifications %}
+        <tr{% if not notification.lue %} class="non-lue"{% endif %}>
+          <td>{{ notification.date|date:"d/m/Y H:i" }}</td>
+          <td>{{ notification.get_priorite_display }}</td>
+          <td>
+            {{ notification.message|default:notification.type }}
+            {% if notification.lien %}
+              — <a href="{{ notification.lien }}">Ouvrir</a>
+            {% endif %}
+          </td>
+          <td>
+            {% if not notification.lue %}
+              <form method="post" action="{% url 'notification_lue' notification.pk %}">
+                {% csrf_token %}
+                <button type="submit">Marquer comme lue</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4">Aucune notification.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
