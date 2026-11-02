@@ -104,3 +104,7 @@ Ce fichier garde la trace des décisions du projet : quoi, quand, qui, et avec q
 58	Le commercial d’un objectif doit appartenir à son équipe. Deux objectifs du même porteur (commercial ou équipe), sur le même produit, ne se chevauchent pas.	Évite les objectifs incohérents ou comptés deux fois.
 59	Création et modification : Responsable commercial (portée « toute »). Consultation : selon la portée (équipe pour chef d’équipe, commercial et lecteur ; tout pour direction et analyste). La suppression (lettre S) n’est pas proposée.	Ligne « Campagnes et objectifs » de la matrice. On garde l’historique des objectifs.
 60	Un seul indicateur de réalisation pour l’instant : les contrats validés.	Autres indicateurs (appels, rendez-vous) à définir avec SYNESS.
+
+
+
+61	Le scénario de démonstration (Responsable commercial, contrats, objectifs, relances) est une commande à part, charger_scenario, qui s’appuie sur charger_demo sans la modifier.	Les tests supposent que les données de base sont vierges de contrats, d’objectifs et d’activités. Développement seulement.
