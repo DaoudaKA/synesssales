@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block titre %}Mes relances — SYNESS Sales{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>Mes relances</h1>
+  <table>
+    <thead><tr><th>Échéance</th><th>Prospect</th><th>Type</th><th>Action</th></tr></thead>
+    <tbody>
+      {% for tache in taches %}
+        <tr>
+          <td>
+            {{ tache.echeance|date:"d/m/Y H:i" }}
+            {% if tache.echeance < maintenant %}<strong>En retard</strong>{% endif %}
+          </td>
+          <td><a href="{% url 'prospect' tache.prospect.pk %}">{{ tache.prospect.nom }}</a></td>
+          <td>{{ tache.get_type_display }}</td>
+          <td>
+            {% if peut_cloturer %}
+              <form method="post" action="{% url 'tache_faite' tache.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="retour" value="relances">
+                <button type="submit">Marquer comme faite</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4">Aucune relance à faire.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

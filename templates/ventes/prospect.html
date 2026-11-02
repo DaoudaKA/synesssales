@@ -13,8 +13,7 @@
     <p>Fiche partenaire liée : {{ prospect.partenaire.nom_commercial }}</p>
   {% endif %}
 
-
-    {% if doublons %}
+  {% if doublons %}
     <div style="border-left:4px solid #E9E60B;background:#fffde7;padding:.5rem 1rem;">
       <strong>Contact multiple possible.</strong>
       Ce client semble déjà suivi par :
@@ -29,7 +28,6 @@
       Vérifie avec cette personne avant de contacter le client.
     </div>
   {% endif %}
-
 
   {% if formulaire %}
     <h2>Réaffecter</h2>
@@ -61,6 +59,9 @@
   </table>
 
   <h2>Dernières activités</h2>
+  {% if peut_consigner %}
+    <p><a href="{% url 'nouvelle_activite' prospect.pk %}">Consigner une activité</a></p>
+  {% endif %}
   <table>
     <thead><tr><th>Date</th><th>Type</th><th>Par</th><th>Résultat</th></tr></thead>
     <tbody>
@@ -78,17 +79,29 @@
   </table>
 
   <h2>Tâches à faire</h2>
+  {% if peut_consigner %}
+    <p><a href="{% url 'nouvelle_tache' prospect.pk %}">Planifier une relance</a></p>
+  {% endif %}
   <table>
-    <thead><tr><th>Échéance</th><th>Type</th><th>Responsable</th></tr></thead>
+    <thead><tr><th>Échéance</th><th>Type</th><th>Responsable</th><th>Action</th></tr></thead>
     <tbody>
       {% for tache in taches %}
         <tr>
           <td>{{ tache.echeance|date:"d/m/Y H:i" }}</td>
           <td>{{ tache.get_type_display }}</td>
           <td>{{ tache.responsable.nom|default:"—" }}</td>
+          <td>
+            {% if peut_cloturer %}
+              <form method="post" action="{% url 'tache_faite' tache.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="retour" value="prospect">
+                <button type="submit">Marquer comme faite</button>
+              </form>
+            {% endif %}
+          </td>
         </tr>
       {% empty %}
-        <tr><td colspan="3">Aucune tâche.</td></tr>
+        <tr><td colspan="4">Aucune tâche.</td></tr>
       {% endfor %}
     </tbody>
   </table>
