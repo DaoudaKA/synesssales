@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block titre %}Objectifs — SYNESS Sales{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>Objectifs</h1>
+  {% if peut_creer %}
+    <p><a href="{% url 'nouvel_objectif' %}">Nouvel objectif</a></p>
+  {% endif %}
+  <table>
+    <thead>
+      <tr>
+        <th>Porteur</th><th>Produit</th><th>Période</th>
+        <th>Cible</th><th>Réalisé</th><th>Atteinte</th><th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ligne in lignes %}
+        <tr>
+          <td>{{ ligne.objectif.porteur }}</td>
+          <td>{{ ligne.objectif.produit }}</td>
+          <td>
+            {{ ligne.objectif.date_debut|date:"d/m/Y" }} →
+            {{ ligne.objectif.date_fin|date:"d/m/Y" }}
+          </td>
+          <td>{{ ligne.objectif.cible }}</td>
+          <td>{{ ligne.realise }}</td>
+          <td>{{ ligne.taux }} %</td>
+          <td>
+            {% if peut_modifier %}
+              <a href="{% url 'modifier_objectif' ligne.objectif.pk %}">Modifier</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7">Aucun objectif.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p><a href="{% url 'prospects' %}">Retour aux prospects</a></p>
+</div>
+{% endblock %}

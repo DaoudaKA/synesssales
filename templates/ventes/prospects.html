@@ -8,6 +8,11 @@
     {% if peut_valider_contrats %}
       — <a href="{% url 'contrats_a_valider' %}">Contrats à valider</a>
     {% endif %}
+
+        {% if peut_voir_objectifs %}
+      — <a href="{% url 'objectifs' %}">Objectifs</a>
+    {% endif %}
+
   </p>
   <p>{{ prospects|length }} prospect(s) visible(s) avec vos droits.</p>
   <table>

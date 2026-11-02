@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block titre %}{{ titre }} — SYNESS Sales{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>{{ titre }}</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ formulaire.as_p }}
+    <button type="submit">{{ bouton }}</button>
+  </form>
+  <p><a href="{% url 'objectifs' %}">Retour aux objectifs</a></p>
+</div>
+{% endblock %}
