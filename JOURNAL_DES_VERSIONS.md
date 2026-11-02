@@ -30,3 +30,21 @@
 - Historique des affectations avec transfert sans perte.
 - Écrans : connexion, accueil, prospects, affectations.
 - 113 tests, CI verte.
+
+
+## Jalon 2 — Référentiel des partenaires (terminé)
+
+- Fiches partenaires avec catégories et localisations, vérification avec historique.
+- Détection des doublons (seuil 0,85), fusion sans suppression, rejet.
+- Import CSV depuis une source validée, avec provenance par valeur et erreurs isolées par ligne.
+- Tests : 177 passés.
+
+## Jalon 4 — Pilotage commercial (terminé)
+
+- Fiche prospect : réaffectation avec historique conservé (qui, quand, motif).
+- Avertissement de contact multiple (même partenaire ou nom proche), sans fuite d'information.
+- Activités, relances, « Mes relances » avec retards signalés.
+- Contrats : soumission, validation, refus avec motif obligatoire ; le prospect devient « Gagné ».
+- Objectifs individuels et collectifs, avec réalisation et taux d'atteinte.
+- Commande `charger_scenario` pour la démonstration.
+- Tests : 246 passés. Décisions 38 à 61.
