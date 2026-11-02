@@ -83,3 +83,9 @@ Ce fichier garde la trace des décisions du projet : quoi, quand, qui, et avec q
 42	Avertissement de contact multiple : un autre commercial suit un prospect actif (ni gagné, ni perdu, ni refusé) sur le même produit, avec le même partenaire ou un nom proche (similarité ≥ 0,85).	Évite que deux commerciaux démarchent le même client.
 43	L’avertissement n’indique que le commercial, l’équipe, le statut et le motif, jamais le nom du prospect de l’autre équipe. Il ne bloque rien.	Respecte les droits de visibilité par équipe ; la décision de continuer reste au commercial.
 44	La comparaison des noms se fait en Python sur les prospects actifs du même produit, sans index.	Suffisant pour la V1. À revoir si le volume dépasse quelques dizaines de milliers de prospects.
+
+
+45	Activités et relances se saisissent depuis la fiche prospect. Le droit C (créer) et le droit M (modifier) de la ligne « Activités et relances » de la matrice s’appliquent avec leur portée : « propre » = seulement ses prospects.	Cohérent avec le reste des droits. À vérifier avec SYNESS : la matrice ne donne la saisie qu’au rôle « CML (p) ».
+46	La première activité fait passer un prospect « Nouveau » à « Contacté ».	Garde le statut cohérent avec le travail réalisé, sans saisie en plus.
+47	Une activité ne peut pas être datée dans le futur ; une échéance de tâche ne peut pas être dans le passé (tolérance de 5 minutes).	Une activité est un fait ; une tâche à faire est tournée vers l’avenir.
+48	« Mes relances » liste les tâches à faire dont la personne est responsable, retards signalés. La vue d’équipe viendra avec les tableaux de bord (jalon 5).	Besoin immédiat d’un commercial ; la supervision a un autre usage.
