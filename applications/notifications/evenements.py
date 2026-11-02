@@ -5,6 +5,7 @@ Le moteur générique (`notifier`) se charge de créer la notification sans doub
 """
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.utils import timezone
 
 from applications.comptes.permissions import portees
 
@@ -18,6 +19,8 @@ PROSPECT_RETIRE = "prospect_retire"
 CONTRAT_A_VALIDER = "contrat_a_valider"
 CONTRAT_VALIDE = "contrat_valide"
 CONTRAT_REFUSE = "contrat_refuse"
+RELANCE_EN_RETARD = "relance_en_retard"
+RELANCE_ESCALADEE = "relance_escaladee"
 
 
 def _lien_prospect(prospect):
@@ -117,3 +120,39 @@ def contrat_decide(contrat):
         lien=_lien_prospect(prospect),
         cle=f"contrat-decision:{contrat.pk}",
     )
+
+
+def relance_en_retard(tache):
+    """Prévient le commercial qu'une de ses tâches a dépassé son échéance.
+
+    Retourne True si l'alerte vient d'être créée (False si elle existait déjà).
+    """
+    prospect = tache.prospect
+    _, creee = notifier(
+        tache.responsable,
+        RELANCE_EN_RETARD,
+        f"Tâche en retard ({tache.get_type_display()}) pour « {prospect.nom} » : "
+        f"l'échéance était le {timezone.localtime(tache.echeance):%d/%m/%Y à %H:%M}.",
+        priorite=Notification.Priorite.MOYENNE,
+        lien=_lien_prospect(prospect),
+        cle=f"relance-en-retard:{tache.pk}",
+    )
+    return creee
+
+
+def relance_escaladee(tache, chef, jours):
+    """Prévient le chef d'équipe qu'une tâche de son équipe traîne depuis `jours` jours.
+
+    Retourne True si l'alerte vient d'être créée (une seule fois par tâche).
+    """
+    prospect = tache.prospect
+    _, creee = notifier(
+        chef,
+        RELANCE_ESCALADEE,
+        f"{tache.responsable.nom} a une tâche ({tache.get_type_display()}) en retard "
+        f"de {jours} jour(s) pour « {prospect.nom} ».",
+        priorite=Notification.Priorite.HAUTE,
+        lien=_lien_prospect(prospect),
+        cle=f"relance-escaladee:{tache.pk}",
+    )
+    return creee

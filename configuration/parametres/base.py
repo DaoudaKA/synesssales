@@ -95,3 +95,7 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = RACINE_PROJET / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Nombre de jours de retard au-delà desquels une relance non faite est signalée
+# au chef d'équipe du commercial (escalade).
+SEUIL_ESCALADE_RELANCES_JOURS = 2
