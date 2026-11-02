@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block titre %}Tableau de bord — SYNESS Sales{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>Tableau de bord commercial</h1>
+
+  {# Chiffres clés #}
+  <div class="indicateurs">
+    <div class="indicateur"><strong>{{ indicateurs.total }}</strong><br>Prospects</div>
+    <div class="indicateur"><strong>{{ indicateurs.gagnes }}</strong><br>Gagnés</div>
+    <div class="indicateur">
+      <strong>{{ indicateurs.taux_conversion }} %</strong><br>Taux de conversion
+    </div>
+    <div class="indicateur">
+      <strong>{{ indicateurs.relances_en_retard }}</strong><br>Tâches en retard
+    </div>
+    {% if indicateurs.contrats_a_valider is not None %}
+    <div class="indicateur">
+      <strong>{{ indicateurs.contrats_a_valider }}</strong><br>
+      <a href="{% url 'contrats_a_valider' %}">Contrats à valider</a>
+    </div>
+    {% endif %}
+  </div>
+
+  {# Répartition par statut #}
+  <h2>Répartition par statut</h2>
+  <table>
+    <thead><tr><th>Statut</th><th>Prospects</th></tr></thead>
+    <tbody>
+    {% for ligne in indicateurs.par_statut %}
+      <tr><td>{{ ligne.libelle }}</td><td>{{ ligne.total }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  {# Résultats comparés : équipe, produit, campagne, zone #}
+  {% for titre, lignes in ventilations %}
+  <h2>{{ titre }}</h2>
+  {% if lignes %}
+  <table>
+    <thead>
+      <tr><th>Libellé</th><th>Prospects</th><th>Gagnés</th><th>Conversion</th></tr>
+    </thead>
+    <tbody>
+    {% for ligne in lignes %}
+      <tr>
+        <td>{{ ligne.libelle }}</td>
+        <td>{{ ligne.total }}</td>
+        <td>{{ ligne.gagnes }}</td>
+        <td>
+          <progress value="{{ ligne.taux }}" max="100"></progress>
+          {{ ligne.taux }} %
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>Aucune donnée.</p>
+  {% endif %}
+  {% endfor %}
+</div>
+
+<style>
+  .indicateurs { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+  .indicateur { border: 1px solid #ddd; border-radius: 8px; padding: 12px 18px; min-width: 130px; }
+  .indicateur strong { font-size: 1.6em; color: #4A3BE0; }
+  progress { width: 120px; height: 8px; accent-color: #4A3BE0; vertical-align: middle; }
+</style>
+{% endblock %}
