@@ -6,12 +6,20 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from applications.comptes.permissions import a_le_droit, portees
+from applications.comptes.permissions import a_le_droit, peut_consulter, portees
 from applications.comptes.services import journaliser
 
-from .formulaires import ActiviteForm, ContratForm, ReaffectationForm, RefusForm, TacheForm
-from .models import Affectation, Contrat, Prospect, Tache
+from .formulaires import (
+    ActiviteForm,
+    ContratForm,
+    ObjectifForm,
+    ReaffectationForm,
+    RefusForm,
+    TacheForm,
+)
+from .models import Affectation, Contrat, Objectif, Prospect, Tache
 from .services import (
+    avancement,
     commerciaux_cibles,
     contacts_en_double,
     enregistrer_activite,
@@ -36,6 +44,7 @@ def liste_prospects(request):
         "prospects": prospects,
         # Affiche le lien « Contrats à valider » aux seuls validateurs.
         "peut_valider_contrats": a_le_droit(request.user, "Contrats", "V"),
+        "peut_voir_objectifs": peut_consulter(request.user, "Campagnes et objectifs"),
     }
     return render(request, "ventes/prospects.html", contexte)
 
@@ -313,3 +322,81 @@ def decision_contrat(request, pk):
             return HttpResponseBadRequest("Décision inconnue.")
     contexte = {"contrat": contrat, "formulaire_refus": formulaire_refus}
     return render(request, "ventes/contrat.html", contexte)
+
+
+
+
+def _peut_gerer_objectifs(utilisateur, droit):
+    """Créer ou modifier un objectif demande la portée « toute » (Responsable commercial)."""
+    return "toute" in portees(utilisateur, "Campagnes et objectifs", droit)
+
+
+@login_required
+def liste_objectifs(request):
+    """Objectifs visibles, avec la réalisation et le taux d'atteinte."""
+    if not peut_consulter(request.user, "Campagnes et objectifs"):
+        raise PermissionDenied
+    objectifs = Objectif.objects.visible_to(request.user).select_related(
+        "produit", "equipe", "commercial"
+    )
+    lignes = []
+    for objectif in objectifs:
+        realise, taux = avancement(objectif)
+        lignes.append({"objectif": objectif, "realise": realise, "taux": taux})
+    contexte = {
+        "lignes": lignes,
+        "peut_creer": _peut_gerer_objectifs(request.user, "C"),
+        "peut_modifier": _peut_gerer_objectifs(request.user, "M"),
+    }
+    return render(request, "ventes/objectifs.html", contexte)
+
+
+@login_required
+def nouvel_objectif(request):
+    """Création d'un objectif (Responsable commercial)."""
+    if not _peut_gerer_objectifs(request.user, "C"):
+        raise PermissionDenied
+    formulaire = ObjectifForm(request.POST or None)
+    if request.method == "POST" and formulaire.is_valid():
+        objectif = formulaire.save(commit=False)
+        objectif.cree_par = request.user
+        objectif.save()
+        journaliser(
+            request.user,
+            "creation",
+            "Campagnes et objectifs",
+            objectif.pk,
+            f"Objectif de {objectif.cible} contrats — {objectif.porteur} ({objectif.produit})",
+        )
+        return redirect("objectifs")
+    contexte = {
+        "titre": "Nouvel objectif",
+        "bouton": "Enregistrer l'objectif",
+        "formulaire": formulaire,
+    }
+    return render(request, "ventes/objectif_formulaire.html", contexte)
+
+
+@login_required
+def modifier_objectif(request, pk):
+    """Modification d'un objectif existant (Responsable commercial)."""
+    if not _peut_gerer_objectifs(request.user, "M"):
+        raise PermissionDenied
+    objectif = get_object_or_404(Objectif, pk=pk)
+    formulaire = ObjectifForm(request.POST or None, instance=objectif)
+    if request.method == "POST" and formulaire.is_valid():
+        objectif = formulaire.save()
+        journaliser(
+            request.user,
+            "modification",
+            "Campagnes et objectifs",
+            objectif.pk,
+            f"Objectif de {objectif.cible} contrats — {objectif.porteur} ({objectif.produit})",
+        )
+        return redirect("objectifs")
+    contexte = {
+        "titre": "Modifier l'objectif",
+        "bouton": "Enregistrer les modifications",
+        "formulaire": formulaire,
+    }
+    return render(request, "ventes/objectif_formulaire.html", contexte)

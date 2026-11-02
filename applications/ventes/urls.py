@@ -22,4 +22,7 @@ urlpatterns = [
     ),
     path("contrats/a-valider/", views.contrats_a_valider, name="contrats_a_valider"),
     path("contrats/<int:pk>/decision/", views.decision_contrat, name="decision_contrat"),
+    path("objectifs/", views.liste_objectifs, name="objectifs"),
+    path("objectifs/nouveau/", views.nouvel_objectif, name="nouvel_objectif"),
+    path("objectifs/<int:pk>/modifier/", views.modifier_objectif, name="modifier_objectif"),
 ]
