@@ -9,7 +9,7 @@ from django.db.models import Q
 
 from applications.comptes.permissions import portees
 
-from .models import Affectation, Prospect, ReaffectationProspect, Tache
+from .models import Affectation, Contrat, Prospect, ReaffectationProspect, Tache
 
 
 @transaction.atomic
@@ -141,3 +141,47 @@ def terminer_tache(tache):
     """Marque une tâche comme faite (on garde la ligne, on ne supprime rien)."""
     tache.statut = Tache.Statut.FAITE
     tache.save(update_fields=["statut"])
+
+
+
+
+def soumettre_contrat(prospect, date_signature):
+    """Crée un contrat « soumis » : il attend la décision d'un validateur."""
+    return Contrat.objects.create(prospect=prospect, date_signature=date_signature)
+
+
+def _contrat_a_decider(contrat):
+    """Verrouille le contrat et vérifie qu'il attend encore une décision.
+
+    Le verrou évite que deux validateurs décident en même temps du même contrat.
+    """
+    Contrat.objects.select_for_update().get(pk=contrat.pk)
+    contrat.refresh_from_db()
+    if contrat.statut_validation != Contrat.StatutValidation.SOUMIS:
+        raise ValueError("Ce contrat a déjà fait l'objet d'une décision.")
+
+
+@transaction.atomic
+def valider_contrat(contrat, validateur):
+    """Valide le contrat ; le prospect devient « Gagné »."""
+    _contrat_a_decider(contrat)
+    contrat.statut_validation = Contrat.StatutValidation.VALIDE
+    contrat.valide_par = validateur  # la personne qui a décidé (validation ou refus)
+    contrat.motif_refus = ""
+    contrat.save(update_fields=["statut_validation", "valide_par", "motif_refus"])
+    prospect = contrat.prospect
+    prospect.statut = Prospect.Statut.GAGNE
+    prospect.save(update_fields=["statut"])
+
+
+@transaction.atomic
+def refuser_contrat(contrat, validateur, motif):
+    """Refuse le contrat avec un motif obligatoire ; le prospect ne change pas de statut."""
+    motif = (motif or "").strip()
+    if not motif:
+        raise ValueError("Un refus doit être motivé.")
+    _contrat_a_decider(contrat)
+    contrat.statut_validation = Contrat.StatutValidation.REFUSE
+    contrat.valide_par = validateur
+    contrat.motif_refus = motif
+    contrat.save(update_fields=["statut_validation", "valide_par", "motif_refus"])

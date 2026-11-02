@@ -4,7 +4,7 @@ import datetime
 from django import forms
 from django.utils import timezone
 
-from .models import Activite, Tache
+from .models import Activite, Contrat, Tache
 
 # Format du champ HTML « datetime-local » (le navigateur envoie « 2026-11-05T10:30 »).
 FORMAT_SAISIE = "%Y-%m-%dT%H:%M"
@@ -89,3 +89,46 @@ class TacheForm(forms.ModelForm):
         if valeur < timezone.now() - TOLERANCE:
             raise forms.ValidationError("L'échéance ne peut pas être dans le passé.")
         return valeur
+
+
+
+class ContratForm(forms.ModelForm):
+    """Soumission d'un contrat à validation."""
+
+    class Meta:
+        model = Contrat
+        fields = ["date_signature"]
+        labels = {"date_signature": "Date de signature"}
+        widgets = {
+            "date_signature": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d")
+        }
+
+    def __init__(self, *args, prospect, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.prospect = prospect
+        # Le modèle accepte une date vide, mais pas la soumission d'un contrat.
+        self.fields["date_signature"].required = True
+
+    def clean_date_signature(self):
+        valeur = self.cleaned_data["date_signature"]
+        if valeur > timezone.localdate():
+            raise forms.ValidationError("La date de signature ne peut pas être dans le futur.")
+        return valeur
+
+    def clean(self):
+        donnees = super().clean()
+        en_cours = [Contrat.StatutValidation.SOUMIS, Contrat.StatutValidation.VALIDE]
+        # Un contrat refusé n'empêche pas d'en soumettre un nouveau.
+        if self.prospect.contrats.filter(statut_validation__in=en_cours).exists():
+            raise forms.ValidationError(
+                "Un contrat est déjà soumis ou validé pour ce prospect."
+            )
+        return donnees
+
+
+class RefusForm(forms.Form):
+    """Motif obligatoire pour refuser un contrat."""
+
+    motif = forms.CharField(
+        label="Motif du refus", widget=forms.Textarea(attrs={"rows": 3})
+    )
