@@ -108,3 +108,11 @@ Ce fichier garde la trace des décisions du projet : quoi, quand, qui, et avec q
 
 
 61	Le scénario de démonstration (Responsable commercial, contrats, objectifs, relances) est une commande à part, charger_scenario, qui s’appuie sur charger_demo sans la modifier.	Les tests supposent que les données de base sont vierges de contrats, d’objectifs et d’activités. Développement seulement.
+
+
+
+#	Décision	Raison
+62	Toute notification se crée par notifier(...). Une clé de regroupement évite de créer deux fois la même alerte pour la même personne (contrainte d’unicité en base).	Le plan demande de regrouper les alertes pour éviter les répétitions.
+63	Le lien d’une notification doit être une adresse interne (commençant par /).	Empêche d’envoyer un utilisateur vers un site extérieur par une notification.
+64	Chacun ne voit et ne modifie que ses propres notifications. Le marquage comme lu se fait en POST.	Confidentialité ; aucune modification par un simple lien.
+65	La cloche (compteur de non lues) s’affiche dans toutes les pages pour un utilisateur connecté.	Informer chacun de ce qui relève de son rôle.
