@@ -25,4 +25,5 @@ urlpatterns = [
     path("objectifs/", views.liste_objectifs, name="objectifs"),
     path("objectifs/nouveau/", views.nouvel_objectif, name="nouvel_objectif"),
     path("objectifs/<int:pk>/modifier/", views.modifier_objectif, name="modifier_objectif"),
+    path("tableau-de-bord/", views.tableau_commercial, name="tableau_de_bord"),
 ]

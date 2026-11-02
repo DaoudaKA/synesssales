@@ -30,6 +30,7 @@ from .services import (
     terminer_tache,
     valider_contrat,
 )
+from .tableau_de_bord import indicateurs, prospects_du_tableau, ventilation
 
 
 @login_required
@@ -45,6 +46,7 @@ def liste_prospects(request):
         # Affiche le lien « Contrats à valider » aux seuls validateurs.
         "peut_valider_contrats": a_le_droit(request.user, "Contrats", "V"),
         "peut_voir_objectifs": peut_consulter(request.user, "Campagnes et objectifs"),
+        "peut_voir_tableau": peut_consulter(request.user, "Tableaux de bord"),
     }
     return render(request, "ventes/prospects.html", contexte)
 
@@ -400,3 +402,22 @@ def modifier_objectif(request, pk):
         "formulaire": formulaire,
     }
     return render(request, "ventes/objectif_formulaire.html", contexte)
+
+
+@login_required
+def tableau_commercial(request):
+    """Tableau de bord commercial : chiffres clés et résultats comparés."""
+    if not peut_consulter(request.user, "Tableaux de bord"):
+        raise PermissionDenied
+    prospects = prospects_du_tableau(request.user)
+    contexte = {
+        "indicateurs": indicateurs(prospects, request.user),
+        # Chaque entrée : (titre du bloc, lignes de résultats).
+        "ventilations": [
+            ("Par équipe", ventilation(prospects, "equipe__nom")),
+            ("Par produit", ventilation(prospects, "produit__nom")),
+            ("Par campagne", ventilation(prospects, "campagne__nom")),
+            ("Par zone", ventilation(prospects, "campagne__zone")),
+        ],
+    }
+    return render(request, "ventes/tableau_de_bord.html", contexte)
