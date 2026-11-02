@@ -71,3 +71,9 @@ Ce fichier garde la trace des décisions du projet : quoi, quand, qui, et avec q
 35	Chaque valeur importée garde sa provenance (source, collecte, champ, valeur, niveau « collecté »).	Traçabilité exigée par le cahier des charges.
 36	Limites d’import : 1 000 lignes, 2 Mo, UTF-8 ; pays « Sénégal » par défaut.	Protège le serveur ; à valider avec SYNESS.
 37	Les fiches importées passent par la détection des doublons ; réimporter un fichier crée donc des alertes.	Rien n’est rejeté en silence.
+
+
+38	Réaffecter un prospect ajoute une ligne ReaffectationProspect (anciens et nouveaux commercial et équipe, auteur, motif, date) ; activités et tâches restent rattachées au prospect.	Critère du plan : un prospect réaffecté conserve tout son historique.
+39	Seuls les droits de modification de portée « toute » ou « périmètre » permettent de réaffecter ; la portée « propre » (commercial) ne le permet pas.	Un commercial ne doit pas se défaire seul de ses prospects. À valider avec SYNESS.
+40	La cible est un commercial actif de l’équipe de la personne qui réaffecte (toutes les équipes pour la portée « toute »).	Garde le prospect dans le périmètre de celui qui l’a déplacé.
+41	Les tâches « à faire » suivent le nouveau commercial ; les tâches faites gardent leur responsable d’origine.	Les relances à venir sont à la charge du nouveau titulaire, le passé reste tracé.

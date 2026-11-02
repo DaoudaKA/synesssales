@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block titre %}{{ prospect.nom }} — SYNESS Sales{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>{{ prospect.nom }}</h1>
+  <p>
+    Produit : {{ prospect.produit }} —
+    Statut : {{ prospect.get_statut_display }} —
+    Commercial : {{ prospect.commercial.nom|default:"—" }} —
+    Équipe : {{ prospect.equipe|default:"—" }}
+  </p>
+  {% if prospect.partenaire %}
+    <p>Fiche partenaire liée : {{ prospect.partenaire.nom_commercial }}</p>
+  {% endif %}
+
+  {% if formulaire %}
+    <h2>Réaffecter</h2>
+    <form method="post">
+      {% csrf_token %}
+      {{ formulaire.as_p }}
+      <button type="submit">Réaffecter le prospect</button>
+    </form>
+  {% endif %}
+
+  <h2>Historique des réaffectations</h2>
+  <table>
+    <thead>
+      <tr><th>Date</th><th>De</th><th>Vers</th><th>Par</th><th>Motif</th></tr>
+    </thead>
+    <tbody>
+      {% for ligne in reaffectations %}
+        <tr>
+          <td>{{ ligne.date|date:"d/m/Y H:i" }}</td>
+          <td>{{ ligne.ancien_commercial.nom|default:"—" }}</td>
+          <td>{{ ligne.nouveau_commercial.nom|default:"—" }}</td>
+          <td>{{ ligne.auteur.nom|default:"—" }}</td>
+          <td>{{ ligne.motif|default:"—" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5">Aucune réaffectation.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Dernières activités</h2>
+  <table>
+    <thead><tr><th>Date</th><th>Type</th><th>Par</th><th>Résultat</th></tr></thead>
+    <tbody>
+      {% for activite in activites %}
+        <tr>
+          <td>{{ activite.date|date:"d/m/Y H:i" }}</td>
+          <td>{{ activite.get_type_display }}</td>
+          <td>{{ activite.auteur.nom|default:"—" }}</td>
+          <td>{{ activite.resultat|default:"—" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4">Aucune activité.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Tâches à faire</h2>
+  <table>
+    <thead><tr><th>Échéance</th><th>Type</th><th>Responsable</th></tr></thead>
+    <tbody>
+      {% for tache in taches %}
+        <tr>
+          <td>{{ tache.echeance|date:"d/m/Y H:i" }}</td>
+          <td>{{ tache.get_type_display }}</td>
+          <td>{{ tache.responsable.nom|default:"—" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="3">Aucune tâche.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p><a href="{% url 'prospects' %}">Retour aux prospects</a></p>
+</div>
+{% endblock %}
