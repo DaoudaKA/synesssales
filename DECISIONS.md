@@ -77,3 +77,9 @@ Ce fichier garde la trace des décisions du projet : quoi, quand, qui, et avec q
 39	Seuls les droits de modification de portée « toute » ou « périmètre » permettent de réaffecter ; la portée « propre » (commercial) ne le permet pas.	Un commercial ne doit pas se défaire seul de ses prospects. À valider avec SYNESS.
 40	La cible est un commercial actif de l’équipe de la personne qui réaffecte (toutes les équipes pour la portée « toute »).	Garde le prospect dans le périmètre de celui qui l’a déplacé.
 41	Les tâches « à faire » suivent le nouveau commercial ; les tâches faites gardent leur responsable d’origine.	Les relances à venir sont à la charge du nouveau titulaire, le passé reste tracé.
+
+
+
+42	Avertissement de contact multiple : un autre commercial suit un prospect actif (ni gagné, ni perdu, ni refusé) sur le même produit, avec le même partenaire ou un nom proche (similarité ≥ 0,85).	Évite que deux commerciaux démarchent le même client.
+43	L’avertissement n’indique que le commercial, l’équipe, le statut et le motif, jamais le nom du prospect de l’autre équipe. Il ne bloque rien.	Respecte les droits de visibilité par équipe ; la décision de continuer reste au commercial.
+44	La comparaison des noms se fait en Python sur les prospects actifs du même produit, sans index.	Suffisant pour la V1. À revoir si le volume dépasse quelques dizaines de milliers de prospects.
