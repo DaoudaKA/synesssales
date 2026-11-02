@@ -89,3 +89,11 @@ Ce fichier garde la trace des décisions du projet : quoi, quand, qui, et avec q
 46	La première activité fait passer un prospect « Nouveau » à « Contacté ».	Garde le statut cohérent avec le travail réalisé, sans saisie en plus.
 47	Une activité ne peut pas être datée dans le futur ; une échéance de tâche ne peut pas être dans le passé (tolérance de 5 minutes).	Une activité est un fait ; une tâche à faire est tournée vers l’avenir.
 48	« Mes relances » liste les tâches à faire dont la personne est responsable, retards signalés. La vue d’équipe viendra avec les tableaux de bord (jalon 5).	Besoin immédiat d’un commercial ; la supervision a un autre usage.
+
+
+49	Contrats : le commercial soumet (C, ses prospects) ; le Responsable commercial valide ou refuse (V) ; le chef d’équipe consulte seulement (L*).	Application directe de la ligne « Contrats » de la matrice. À valider avec SYNESS : le chef d’équipe ne valide pas.
+50	Un refus exige un motif. valide_par enregistre la personne qui a décidé, en cas de validation comme de refus.	Un refus non expliqué est inutilisable pour le commercial.
+51	Un contrat validé fait passer le prospect à « Gagné » ; un refus ne change pas son statut.	Le statut suit le résultat commercial réel.
+52	Un seul contrat « soumis » ou « validé » par prospect ; après un refus, un nouveau contrat peut être soumis.	Évite les doublons de contrat sans bloquer la reprise après correction.
+53	Un contrat décidé est définitif et on ne valide pas le contrat de ses propres prospects.	Traçabilité des décisions et séparation des rôles.
+54	La date de signature d’un contrat ne peut pas être dans le futur.
