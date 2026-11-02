@@ -111,3 +111,33 @@ def contacts_en_double(prospect):
             continue
         resultats.append((autre, motif))
     return resultats
+
+
+
+@transaction.atomic
+def enregistrer_activite(prospect, auteur, activite):
+    """Rattache une activité à son prospect et à son auteur.
+
+    La première activité fait passer un prospect « Nouveau » à « Contacté ».
+    """
+    activite.prospect = prospect
+    activite.auteur = auteur
+    activite.save()
+    if prospect.statut == Prospect.Statut.NOUVEAU:
+        prospect.statut = Prospect.Statut.CONTACTE
+        prospect.save(update_fields=["statut"])
+    return activite
+
+
+def planifier_tache(prospect, tache):
+    """Rattache une tâche au prospect ; elle est confiée à son commercial actuel."""
+    tache.prospect = prospect
+    tache.responsable = prospect.commercial
+    tache.save()
+    return tache
+
+
+def terminer_tache(tache):
+    """Marque une tâche comme faite (on garde la ligne, on ne supprime rien)."""
+    tache.statut = Tache.Statut.FAITE
+    tache.save(update_fields=["statut"])
