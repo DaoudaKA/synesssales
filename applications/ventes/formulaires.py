@@ -2,9 +2,10 @@
 import datetime
 
 from django import forms
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from .models import Activite, Contrat, Tache
+from .models import Activite, Contrat, Objectif, Tache
 
 # Format du champ HTML « datetime-local » (le navigateur envoie « 2026-11-05T10:30 »).
 FORMAT_SAISIE = "%Y-%m-%dT%H:%M"
@@ -132,3 +133,60 @@ class RefusForm(forms.Form):
     motif = forms.CharField(
         label="Motif du refus", widget=forms.Textarea(attrs={"rows": 3})
     )
+
+
+
+
+class ObjectifForm(forms.ModelForm):
+    """Création et modification d'un objectif individuel ou collectif."""
+
+    cible = forms.IntegerField(label="Cible (contrats validés)", min_value=1)
+
+    class Meta:
+        model = Objectif
+        fields = ["produit", "equipe", "commercial", "cible", "date_debut", "date_fin"]
+        labels = {
+            "commercial": "Commercial (vide = objectif collectif de l'équipe)",
+            "date_debut": "Début de la période",
+            "date_fin": "Fin de la période",
+        }
+        widgets = {
+            "date_debut": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "date_fin": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        commerciaux = get_user_model().objects.filter(statut="actif", roles__nom="Commercial")
+        self.fields["commercial"].queryset = commerciaux.distinct()
+        self.fields["commercial"].required = False
+
+    def clean(self):
+        donnees = super().clean()
+        equipe = donnees.get("equipe")
+        commercial = donnees.get("commercial")
+        produit = donnees.get("produit")
+        debut = donnees.get("date_debut")
+        fin = donnees.get("date_fin")
+        if debut and fin and fin < debut:
+            raise forms.ValidationError("La fin de la période doit suivre son début.")
+        # Un objectif individuel doit porter sur quelqu'un de l'équipe choisie.
+        if commercial and equipe and commercial.equipe_id != equipe.pk:
+            raise forms.ValidationError("Ce commercial n'appartient pas à cette équipe.")
+        if produit and equipe and debut and fin:
+            # Même porteur, même produit : deux périodes ne doivent pas se chevaucher.
+            # filter(commercial=None) cherche les objectifs collectifs (colonne vide).
+            chevauchements = Objectif.objects.filter(
+                produit=produit,
+                equipe=equipe,
+                commercial=commercial,
+                date_debut__lte=fin,
+                date_fin__gte=debut,
+            )
+            if self.instance.pk:
+                chevauchements = chevauchements.exclude(pk=self.instance.pk)
+            if chevauchements.exists():
+                raise forms.ValidationError(
+                    "Un objectif existe déjà pour ce porteur, ce produit et cette période."
+                )
+        return donnees

@@ -185,3 +185,30 @@ def refuser_contrat(contrat, validateur, motif):
     contrat.valide_par = validateur
     contrat.motif_refus = motif
     contrat.save(update_fields=["statut_validation", "valide_par", "motif_refus"])
+
+
+
+
+def realisation(objectif):
+    """Nombre de contrats validés qui comptent pour cet objectif.
+
+    On compte les contrats validés, signés pendant la période, sur le produit de
+    l'objectif, pour les prospects du commercial (individuel) ou de l'équipe (collectif).
+    Le rattachement suit le commercial et l'équipe actuels du prospect.
+    """
+    contrats = Contrat.objects.filter(
+        statut_validation=Contrat.StatutValidation.VALIDE,
+        prospect__produit=objectif.produit,
+        date_signature__range=(objectif.date_debut, objectif.date_fin),
+    )
+    if objectif.commercial_id is not None:
+        contrats = contrats.filter(prospect__commercial_id=objectif.commercial_id)
+    else:
+        contrats = contrats.filter(prospect__equipe_id=objectif.equipe_id)
+    return contrats.count()
+
+
+def avancement(objectif):
+    """Retourne (réalisé, taux d'atteinte en pourcentage entier)."""
+    realise = realisation(objectif)
+    return realise, round(100 * realise / objectif.cible)
