@@ -116,3 +116,9 @@ Ce fichier garde la trace des décisions du projet : quoi, quand, qui, et avec q
 63	Le lien d’une notification doit être une adresse interne (commençant par /).	Empêche d’envoyer un utilisateur vers un site extérieur par une notification.
 64	Chacun ne voit et ne modifie que ses propres notifications. Le marquage comme lu se fait en POST.	Confidentialité ; aucune modification par un simple lien.
 65	La cloche (compteur de non lues) s’affiche dans toutes les pages pour un utilisateur connecté.	Informer chacun de ce qui relève de son rôle.
+
+
+66	Les événements qui notifient sont regroupés dans notifications/evenements.py et appelés depuis les services de ventes, jamais depuis les vues : tous les chemins (écran, commande, import) notifient de la même façon.
+67	L’auteur d’une action n’est jamais notifié de sa propre action. L’ancien commercial d’un prospect réaffecté est prévenu sans lien, car il n’a peut-être plus accès à la fiche.
+68	Un contrat soumis alerte les personnes ayant le droit V sur les contrats (toute portée, ou périmètre si le prospect est dans leur équipe), sauf le commercial propriétaire. Le lien mène à « Contrats à valider » (cohérent avec la décision 55).
+69	Les alertes de validation et de décision portent une clé de regroupement par contrat : un événement rejoué ne crée pas de doublon. Un refus est de priorité haute, une validation de priorité moyenne.
