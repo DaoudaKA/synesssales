@@ -392,3 +392,79 @@ class ReaffectationProspect(models.Model):
 
     def __str__(self):
         return f"{self.prospect} : {self.ancien_commercial} → {self.nouveau_commercial}"
+
+
+class ObjectifQuerySet(models.QuerySet):
+    """Requêtes sur les objectifs, filtrées selon les droits de la personne."""
+
+    def visible_to(self, utilisateur):
+        # Import local : évite un import circulaire entre les applications.
+        from applications.comptes.permissions import portees_consultation
+
+        etendues = portees_consultation(utilisateur, "Campagnes et objectifs")
+        if "toute" in etendues:
+            return self.all()
+        if "perimetre" in etendues:
+            # Le périmètre, c'est son équipe, ou les équipes que l'on dirige.
+            condition = Q(equipe__chef_equipe=utilisateur)
+            if utilisateur.equipe_id is not None:
+                condition |= Q(equipe_id=utilisateur.equipe_id)
+            return self.filter(condition).distinct()
+        if "propre" in etendues:
+            return self.filter(commercial=utilisateur)
+        return self.none()
+
+
+class Objectif(models.Model):
+    """Objectif de contrats validés, pour une équipe ou pour un de ses commerciaux.
+
+    Sans commercial, l'objectif est collectif (toute l'équipe) ; avec un commercial,
+    il est individuel. L'équipe est toujours renseignée : c'est elle qui sert à
+    décider qui peut voir l'objectif.
+    """
+
+    produit = models.ForeignKey(Produit, on_delete=models.PROTECT, related_name="objectifs")
+    equipe = models.ForeignKey(
+        "equipes.Equipe", on_delete=models.PROTECT, related_name="objectifs"
+    )
+    commercial = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="objectifs_individuels",
+    )
+    cible = models.PositiveIntegerField(help_text="Nombre de contrats validés à atteindre.")
+    date_debut = models.DateField()
+    date_fin = models.DateField()
+    cree_par = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="objectifs_crees",
+    )
+    date_creation = models.DateTimeField(auto_now_add=True)
+
+    objects = ObjectifQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = "objectif"
+        verbose_name_plural = "objectifs"
+        ordering = ["-date_debut", "id"]
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(date_fin__gte=F("date_debut")),
+                name="objectif_dates_coherentes",
+            ),
+            models.CheckConstraint(condition=Q(cible__gt=0), name="objectif_cible_positive"),
+        ]
+
+    @property
+    def porteur(self):
+        """Qui doit atteindre l'objectif : un commercial ou toute l'équipe."""
+        if self.commercial_id is not None:
+            return self.commercial.nom
+        return f"Équipe {self.equipe} (collectif)"
+
+    def __str__(self):
+        return f"{self.porteur} — {self.produit} ({self.cible})"
