@@ -1,5 +1,7 @@
 """Services du pilotage commercial."""
 import datetime
+import unicodedata
+from difflib import SequenceMatcher
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -7,7 +9,7 @@ from django.db.models import Q
 
 from applications.comptes.permissions import portees
 
-from .models import Affectation, ReaffectationProspect, Tache
+from .models import Affectation, Prospect, ReaffectationProspect, Tache
 
 
 @transaction.atomic
@@ -69,3 +71,43 @@ def reaffecter_prospect(prospect, nouveau_commercial, auteur, motif=""):
         responsable=nouveau_commercial
     )
     return trace
+
+
+
+# Un prospect gagné, perdu ou refusé n'est plus « en cours » : plus de risque de doublon.
+STATUTS_CLOS = [Prospect.Statut.GAGNE, Prospect.Statut.PERDU, Prospect.Statut.REFUSE]
+# Même seuil que pour les doublons de partenaires (décision 12).
+SEUIL_NOM_PROCHE = 0.85
+
+
+def _simplifier(texte):
+    """Minuscules sans accents, pour comparer « Garage Sénégal » et « garage senegal »."""
+    sans_accents = unicodedata.normalize("NFKD", texte).encode("ascii", "ignore").decode()
+    return " ".join(sans_accents.lower().split())
+
+
+def contacts_en_double(prospect):
+    """Autres prospects actifs, suivis par un autre commercial, sur le même client.
+
+    Retourne une liste de couples (prospect, motif). On interroge tous les prospects,
+    sans filtre d'équipe : le doublon peut venir d'une autre équipe. Le gabarit
+    n'affiche donc que le commercial, l'équipe et le statut, jamais le nom.
+    """
+    autres = (
+        Prospect.objects.filter(produit=prospect.produit, commercial__isnull=False)
+        .exclude(pk=prospect.pk)
+        .exclude(statut__in=STATUTS_CLOS)
+        .exclude(commercial=prospect.commercial)
+        .select_related("commercial", "equipe")
+    )
+    nom = _simplifier(prospect.nom)
+    resultats = []
+    for autre in autres:
+        if prospect.partenaire_id and autre.partenaire_id == prospect.partenaire_id:
+            motif = "même partenaire"
+        elif SequenceMatcher(None, nom, _simplifier(autre.nom)).ratio() >= SEUIL_NOM_PROCHE:
+            motif = "nom très proche"
+        else:
+            continue
+        resultats.append((autre, motif))
+    return resultats
