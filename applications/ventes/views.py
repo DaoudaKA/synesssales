@@ -2,13 +2,22 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from applications.comptes.permissions import a_le_droit, portees
 from applications.comptes.services import journaliser
 
-from .formulaires import ReaffectationForm
-from .models import Affectation, Prospect
-from .services import commerciaux_cibles, contacts_en_double, reaffecter_prospect
+from .formulaires import ActiviteForm, ReaffectationForm, TacheForm
+from .models import Affectation, Prospect, Tache
+from .services import (
+    commerciaux_cibles,
+    contacts_en_double,
+    enregistrer_activite,
+    planifier_tache,
+    reaffecter_prospect,
+    terminer_tache,
+)
 
 
 @login_required
@@ -85,5 +94,120 @@ def fiche_prospect(request, pk):
         "activites": prospect.activites.select_related("auteur")[:10],
         "taches": prospect.taches.filter(statut="a_faire").select_related("responsable"),
         "doublons": contacts_en_double(prospect),
+        "peut_consigner": _peut_agir(request.user, prospect, "C"),
+        "peut_cloturer": _peut_agir(request.user, prospect, "M"),
     }
     return render(request, "ventes/prospect.html", contexte)
+
+
+
+
+def _peut_agir(utilisateur, prospect, droit):
+    """Droit « C » (créer) ou « M » (modifier) sur les activités et relances d'un prospect.
+
+    Le droit vient de la matrice ; la portée dit sur quels prospects il s'applique.
+    """
+    etendues = portees(utilisateur, "Activités et relances", droit)
+    if "toute" in etendues:
+        return True
+    if "perimetre" in etendues:
+        return Prospect.objects.visible_to(utilisateur).filter(pk=prospect.pk).exists()
+    # Portée « propre » : seulement les prospects dont on est le commercial.
+    return "propre" in etendues and prospect.commercial_id == utilisateur.pk
+
+
+def _prospect_pour_action(request, pk, droit):
+    """Prospect visible par l'utilisateur et sur lequel il a le droit d'agir.
+
+    Hors périmètre : 404 (on ne révèle pas son existence). Sans le droit : 403.
+    """
+    visibles = Prospect.objects.visible_to(request.user)
+    prospect = get_object_or_404(visibles, pk=pk)
+    if not _peut_agir(request.user, prospect, droit):
+        raise PermissionDenied
+    return prospect
+
+
+@login_required
+def nouvelle_activite(request, pk):
+    """Formulaire de saisie d'une activité sur un prospect."""
+    prospect = _prospect_pour_action(request, pk, "C")
+    formulaire = ActiviteForm(request.POST or None)
+    if request.method == "POST" and formulaire.is_valid():
+        activite = enregistrer_activite(prospect, request.user, formulaire.save(commit=False))
+        journaliser(
+            request.user,
+            "creation",
+            "Activités et relances",
+            activite.pk,
+            f"{activite.get_type_display()} — « {prospect.nom} »",
+        )
+        return redirect("prospect", pk=prospect.pk)
+    contexte = {
+        "titre": "Consigner une activité",
+        "bouton": "Enregistrer l'activité",
+        "prospect": prospect,
+        "formulaire": formulaire,
+    }
+    return render(request, "ventes/formulaire.html", contexte)
+
+
+@login_required
+def nouvelle_tache(request, pk):
+    """Formulaire de planification d'une relance sur un prospect."""
+    prospect = _prospect_pour_action(request, pk, "C")
+    formulaire = TacheForm(request.POST or None)
+    if request.method == "POST" and formulaire.is_valid():
+        tache = planifier_tache(prospect, formulaire.save(commit=False))
+        journaliser(
+            request.user,
+            "creation",
+            "Activités et relances",
+            tache.pk,
+            f"{tache.get_type_display()} prévue pour « {prospect.nom} »",
+        )
+        return redirect("prospect", pk=prospect.pk)
+    contexte = {
+        "titre": "Planifier une relance",
+        "bouton": "Planifier",
+        "prospect": prospect,
+        "formulaire": formulaire,
+    }
+    return render(request, "ventes/formulaire.html", contexte)
+
+
+@login_required
+@require_POST  # une action qui modifie des données ne se fait jamais par simple lien
+def tache_faite(request, pk):
+    """Marque une tâche comme faite."""
+    tache = get_object_or_404(Tache, pk=pk)
+    prospect = _prospect_pour_action(request, tache.prospect_id, "M")
+    if tache.statut == Tache.Statut.A_FAIRE:
+        terminer_tache(tache)
+        journaliser(
+            request.user,
+            "modification",
+            "Activités et relances",
+            tache.pk,
+            f"{tache.get_type_display()} terminée — « {prospect.nom} »",
+        )
+    # Le bouton existe sur la fiche et sur « Mes relances » : on revient d'où l'on vient.
+    if request.POST.get("retour") == "relances":
+        return redirect("relances")
+    return redirect("prospect", pk=prospect.pk)
+
+
+@login_required
+def mes_relances(request):
+    """Mes tâches à faire, les plus urgentes en premier (ordre de l'échéance)."""
+    if not a_le_droit(request.user, "Activités et relances", "L"):
+        raise PermissionDenied
+    taches = Tache.objects.filter(
+        responsable=request.user, statut=Tache.Statut.A_FAIRE
+    ).select_related("prospect")
+    contexte = {
+        "taches": taches,
+        "maintenant": timezone.now(),  # sert à repérer les retards dans le gabarit
+        "peut_cloturer": bool(portees(request.user, "Activités et relances", "M")),
+    }
+    return render(request, "ventes/relances.html", contexte)
