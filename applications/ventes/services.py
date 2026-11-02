@@ -8,6 +8,7 @@ from django.db import transaction
 from django.db.models import Q
 
 from applications.comptes.permissions import portees
+from applications.notifications import evenements
 
 from .models import Affectation, Contrat, Prospect, ReaffectationProspect, Tache
 
@@ -24,9 +25,12 @@ def affecter(utilisateur, produit, date_debut, campagne=None):
     for ancienne in ouvertes:
         ancienne.date_fin = max(ancienne.date_debut, veille)
         ancienne.save(update_fields=["date_fin"])
-    return Affectation.objects.create(
-        utilisateur=utilisateur, produit=produit, campagne=campagne, date_debut=date_debut
+    affectation = Affectation.objects.create(
+    utilisateur=utilisateur, produit=produit, campagne=campagne, date_debut=date_debut
     )
+    # Prévient la personne de sa nouvelle affectation.
+    evenements.affectation_produit(affectation)
+    return affectation
 
 
 def commerciaux_cibles(utilisateur):
@@ -70,6 +74,9 @@ def reaffecter_prospect(prospect, nouveau_commercial, auteur, motif=""):
     prospect.taches.filter(statut=Tache.Statut.A_FAIRE, responsable=ancien).update(
         responsable=nouveau_commercial
     )
+        # Prévient le nouveau commercial (et l'ancien).
+    evenements.prospect_reaffecte(prospect, ancien, auteur, motif)
+    return trace
     return trace
 
 
@@ -147,7 +154,10 @@ def terminer_tache(tache):
 
 def soumettre_contrat(prospect, date_signature):
     """Crée un contrat « soumis » : il attend la décision d'un validateur."""
-    return Contrat.objects.create(prospect=prospect, date_signature=date_signature)
+    contrat = Contrat.objects.create(prospect=prospect, date_signature=date_signature)
+    # Prévient les validateurs habilités.
+    evenements.contrat_soumis(contrat)
+    return contrat
 
 
 def _contrat_a_decider(contrat):
@@ -172,6 +182,7 @@ def valider_contrat(contrat, validateur):
     prospect = contrat.prospect
     prospect.statut = Prospect.Statut.GAGNE
     prospect.save(update_fields=["statut"])
+    evenements.contrat_decide(contrat)
 
 
 @transaction.atomic
@@ -185,7 +196,7 @@ def refuser_contrat(contrat, validateur, motif):
     contrat.valide_par = validateur
     contrat.motif_refus = motif
     contrat.save(update_fields=["statut_validation", "valide_par", "motif_refus"])
-
+    evenements.contrat_decide(contrat)
 
 
 
