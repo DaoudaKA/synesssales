@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block titre %}Contrats à valider — SYNESS Sales{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>Contrats à valider</h1>
+  <table>
+    <thead>
+      <tr><th>Prospect</th><th>Commercial</th><th>Équipe</th><th>Signature</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      {% for contrat in contrats %}
+        <tr>
+          <td>{{ contrat.prospect.nom }}</td>
+          <td>{{ contrat.prospect.commercial.nom|default:"—" }}</td>
+          <td>{{ contrat.prospect.equipe|default:"—" }}</td>
+          <td>{{ contrat.date_signature|date:"d/m/Y"|default:"—" }}</td>
+          <td><a href="{% url 'decision_contrat' contrat.pk %}">Examiner</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5">Aucun contrat en attente.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

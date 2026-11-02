@@ -105,6 +105,34 @@
       {% endfor %}
     </tbody>
   </table>
+    {% if voir_contrats %}
+    <h2>Contrats</h2>
+    {% if peut_soumettre %}
+      <p><a href="{% url 'nouveau_contrat' prospect.pk %}">Soumettre un contrat</a></p>
+    {% endif %}
+    <table>
+      <thead>
+        <tr><th>Signature</th><th>Statut</th><th>Motif du refus</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        {% for contrat in contrats %}
+          <tr>
+            <td>{{ contrat.date_signature|date:"d/m/Y"|default:"—" }}</td>
+            <td>{{ contrat.get_statut_validation_display }}</td>
+            <td>{{ contrat.motif_refus|default:"—" }}</td>
+            <td>
+              {% if peut_valider and contrat.statut_validation == "soumis" %}
+                <a href="{% url 'decision_contrat' contrat.pk %}">Examiner</a>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4">Aucun contrat.</td></tr>
+        {% endfor %}
+      </tbody>
+  </table>
+   {% endif %}
+
   <p><a href="{% url 'prospects' %}">Retour aux prospects</a></p>
 </div>
 {% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block titre %}Contrat — {{ contrat.prospect.nom }} — SYNESS Sales{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>Contrat — {{ contrat.prospect.nom }}</h1>
+  <p>
+    Commercial : {{ contrat.prospect.commercial.nom|default:"—" }} —
+    Équipe : {{ contrat.prospect.equipe|default:"—" }} —
+    Signature : {{ contrat.date_signature|date:"d/m/Y"|default:"—" }} —
+    Statut : {{ contrat.get_statut_validation_display }}
+  </p>
+
+  {% if contrat.statut_validation == "soumis" %}
+    <h2>Valider</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="decision" value="valider">
+      <button type="submit">Valider le contrat</button>
+    </form>
+
+    <h2>Refuser</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="decision" value="refuser">
+      {{ formulaire_refus.as_p }}
+      <button type="submit">Refuser le contrat</button>
+    </form>
+  {% else %}
+    <p>Ce contrat a déjà fait l'objet d'une décision.</p>
+  {% endif %}
+  <p><a href="{% url 'contrats_a_valider' %}">Retour aux contrats à valider</a></p>
+</div>
+{% endblock %}

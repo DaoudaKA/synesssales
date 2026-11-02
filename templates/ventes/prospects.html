@@ -3,6 +3,12 @@
 {% block contenu %}
 <div class="carte">
   <h1>Prospects</h1>
+  <p>
+    <a href="{% url 'relances' %}">Mes relances</a>
+    {% if peut_valider_contrats %}
+      — <a href="{% url 'contrats_a_valider' %}">Contrats à valider</a>
+    {% endif %}
+  </p>
   <p>{{ prospects|length }} prospect(s) visible(s) avec vos droits.</p>
   <table>
     <thead>
