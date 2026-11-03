@@ -129,3 +129,9 @@ Ce fichier garde la trace des décisions du projet : quoi, quand, qui, et avec q
 71	Le commercial est alerté dès que l’échéance est dépassée. Le chef de l’équipe du responsable est alerté quand le retard atteint le seuil (réglage SEUIL_ESCALADE_RELANCES_JOURS, 2 jours par défaut, modifiable à l’appel par --seuil-jours). Valeur à confirmer avec SYNESS.
 72	Une alerte et une escalade par tâche (clés relance-en-retard:<id> et relance-escaladee:<id>) : la commande peut être relancée à volonté sans doublon. Une tâche faite ou annulée n’alerte plus.
 73	Un responsable sans équipe ou sans chef n’est pas escaladé, et un chef n’est pas escaladé à lui-même. La commande compte et signale les cas « sans chef » pour corriger l’organisation.
+
+
+79	L’alerte « relance en retard » du commercial passe en priorité Haute, comme la matrice du cahier (section 9.1).
+80	« Relance à échéance » : un rappel de priorité Haute est envoyé au commercial pour toute tâche (hors rendez-vous) dont l’échéance tombe dans les 24 heures (réglage DELAI_RAPPEL_ECHEANCE_HEURES). Délai proposé, à valider avec SYNESS.
+81	« Rendez-vous imminent » : alerte Haute pour un rendez-vous qui commence dans les 2 heures (réglage DELAI_RDV_IMMINENT_HEURES). Canal application pour l’instant ; SMS ou messagerie viendront en option (plan, section 6).
+82	Une seule commande (verifier_relances) traite retards, escalades, rappels d’échéance et rendez-vous imminents. Elle est conçue pour tourner souvent (par exemple toutes les 15 minutes) ; la planification sera mise en place au déploiement.
