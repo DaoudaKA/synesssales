@@ -104,3 +104,6 @@ SEUIL_ESCALADE_RELANCES_JOURS = 2
 DELAI_RAPPEL_ECHEANCE_HEURES = 24
 # Un rendez-vous qui commence dans ce délai est signalé comme imminent.
 DELAI_RDV_IMMINENT_HEURES = 2
+
+# Un prospect en cours sans activité depuis ce nombre de jours est signalé au chef d'équipe.
+SEUIL_SANS_SUIVI_JOURS = 7

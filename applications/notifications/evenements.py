@@ -23,6 +23,7 @@ RELANCE_EN_RETARD = "relance_en_retard"
 RELANCE_ESCALADEE = "relance_escaladee"
 RELANCE_A_ECHEANCE = "relance_a_echeance"
 RDV_IMMINENT = "rdv_imminent"
+PROSPECT_SANS_SUIVI = "prospect_sans_suivi"
 
 
 def _lien_prospect(prospect):
@@ -194,5 +195,24 @@ def rendez_vous_imminent(tache):
         priorite=Notification.Priorite.HAUTE,
         lien=_lien_prospect(prospect),
         cle=f"rdv-imminent:{tache.pk}",
+    )
+    return creee
+
+
+def prospect_sans_suivi(prospect, chef, jours, reference):
+    """Prévient le chef d'équipe qu'un prospect n'a pas été suivi depuis `jours` jours.
+
+    `reference` est la date du dernier contact (ou de la création du prospect). Elle
+    entre dans la clé : une nouvelle alerte n'est possible qu'après un nouveau contact
+    suivi d'un nouveau silence. Retourne True si l'alerte vient d'être créée.
+    """
+    _, creee = notifier(
+        chef,
+        PROSPECT_SANS_SUIVI,
+        f"Le prospect « {prospect.nom} » ({prospect.commercial.nom}) n'a pas eu "
+        f"d'activité depuis {jours} jour(s).",
+        priorite=Notification.Priorite.MOYENNE,
+        lien=_lien_prospect(prospect),
+        cle=f"sans-suivi:{prospect.pk}:{timezone.localtime(reference):%Y%m%d}",
     )
     return creee
