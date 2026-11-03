@@ -153,3 +153,9 @@ N°	Décision
 94	Résumé périodique : fréquence proposée hebdomadaire (la matrice la laisse à définir avec SYNESS). Destinataires : les comptes actifs qui consultent les tableaux de bord avec la portée « toute » (Direction, Responsable commercial, Responsable data, Analyste métier).
 95	Le contenu reprend les indicateurs du tableau de bord de la personne, donc dans ses propres droits : prospects, nouveaux sur 7 jours, gagnés, taux de conversion, tâches en retard et, si elle a le droit V, contrats à valider. Priorité basse, envoi par e-mail comme la matrice ; il reste aussi dans l’historique de l’application.
 96	Un seul résumé par personne et par semaine (clé avec la semaine ISO) : la commande envoyer_resume peut être relancée sans doublon.
+
+
+97	Les cinq seuils et délais des notifications se règlent depuis l’écran « Paramétrage des notifications ». Ordre de priorité : valeur enregistrée, puis réglage du projet (settings), puis valeur par défaut du catalogue. Chaque valeur est bornée.
+98	Droits : consultation avec L, C ou M ; modification avec M. Selon la matrice, l’administrateur système (CMA) et le Responsable commercial (M*) peuvent modifier. Ces valeurs étant globales, le périmètre « * » du Responsable commercial n’est pas restreint : à valider avec SYNESS.
+99	Chaque changement de valeur est inscrit au journal d’audit, avec l’ancienne et la nouvelle valeur. Enregistrer sans rien changer ne crée ni ligne de paramètre ni ligne d’audit.
+100	Le paramétrage couvre pour l’instant les seuils et délais numériques. Les destinataires, priorités et canaux par événement restent fixés dans le code, selon la matrice ; un réglage par événement pourra s’ajouter si SYNESS le demande.
