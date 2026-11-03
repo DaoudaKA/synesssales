@@ -143,3 +143,8 @@ N°	Décision
 88	En cas d’échec, l’erreur est conservée et l’envoi réessayé à l’exécution suivante, jusqu’à 3 tentatives (COURRIEL_MAX_TENTATIVES). Plafond de 100 e-mails par exécution (COURRIEL_PLAFOND_PAR_EXECUTION), le reste attend.
 89	La configuration vient de l’environnement : sans EMAIL_HOST, les e-mails s’affichent dans la console (aucun envoi accidentel hors production). Les liens des e-mails sont absolus grâce à SITE_URL.
 90	Seuls les comptes actifs reçoivent des e-mails. Aucun e-mail n’est envoyé à un prospect : les notifications s’adressent aux utilisateurs internes. Un fournisseur de SMS reste hors périmètre tant que SYNESS n’a pas validé l’intérêt et le budget.
+
+
+91	« Objectif en écart » : un objectif en cours est signalé quand son taux d’atteinte est inférieur de 20 points ou plus (réglage TOLERANCE_ECART_OBJECTIF_POINTS) à la part de période écoulée. Seuil et définition à valider avec SYNESS.
+92	Destinataires : les comptes actifs qui ont le droit de modifier les objectifs avec une portée « toute » (Responsable commercial). Les chefs d’équipe (périmètre) et l’administrateur système (lecture seule) ne sont pas alertés.
+93	Alerte périodique : une par objectif, par destinataire et par semaine (clé avec la semaine ISO), de priorité moyenne, par application et par e-mail (matrice). Commande quotidienne verifier_objectifs, distincte de verifier_relances qui tourne plus souvent.
