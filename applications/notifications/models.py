@@ -31,6 +31,11 @@ class Notification(models.Model):
     # Clé de regroupement : la même alerte pour la même personne n'est créée qu'une fois
     # (par exemple « relance-en-retard:45 »). Vide = pas de regroupement.
     cle = models.CharField(max_length=120, blank=True)
+    # E-mail : demandé par l'événement, puis envoyé par la commande « envoyer_courriels ».
+    par_courriel = models.BooleanField(default=False)
+    courriel_envoye_le = models.DateTimeField(null=True, blank=True)
+    courriel_tentatives = models.PositiveSmallIntegerField(default=0)
+    courriel_erreur = models.CharField(max_length=200, blank=True)
 
     class Meta:
         verbose_name = "notification"
