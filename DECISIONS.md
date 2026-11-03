@@ -148,3 +148,8 @@ N°	Décision
 91	« Objectif en écart » : un objectif en cours est signalé quand son taux d’atteinte est inférieur de 20 points ou plus (réglage TOLERANCE_ECART_OBJECTIF_POINTS) à la part de période écoulée. Seuil et définition à valider avec SYNESS.
 92	Destinataires : les comptes actifs qui ont le droit de modifier les objectifs avec une portée « toute » (Responsable commercial). Les chefs d’équipe (périmètre) et l’administrateur système (lecture seule) ne sont pas alertés.
 93	Alerte périodique : une par objectif, par destinataire et par semaine (clé avec la semaine ISO), de priorité moyenne, par application et par e-mail (matrice). Commande quotidienne verifier_objectifs, distincte de verifier_relances qui tourne plus souvent.
+
+
+94	Résumé périodique : fréquence proposée hebdomadaire (la matrice la laisse à définir avec SYNESS). Destinataires : les comptes actifs qui consultent les tableaux de bord avec la portée « toute » (Direction, Responsable commercial, Responsable data, Analyste métier).
+95	Le contenu reprend les indicateurs du tableau de bord de la personne, donc dans ses propres droits : prospects, nouveaux sur 7 jours, gagnés, taux de conversion, tâches en retard et, si elle a le droit V, contrats à valider. Priorité basse, envoi par e-mail comme la matrice ; il reste aussi dans l’historique de l’application.
+96	Un seul résumé par personne et par semaine (clé avec la semaine ISO) : la commande envoyer_resume peut être relancée sans doublon.
