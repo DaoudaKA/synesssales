@@ -25,6 +25,7 @@ RELANCE_A_ECHEANCE = "relance_a_echeance"
 RDV_IMMINENT = "rdv_imminent"
 PROSPECT_SANS_SUIVI = "prospect_sans_suivi"
 OBJECTIF_EN_ECART = "objectif_en_ecart"
+RESUME_PERIODIQUE = "resume_periodique"
 
 
 def _lien_prospect(prospect):
@@ -251,6 +252,36 @@ def objectif_en_ecart(destinataire, objectif, realise, taux, attendu, aujourdhui
         lien=reverse("objectifs"),
         cle=f"objectif-en-ecart:{objectif.pk}:{semaine.year}-S{semaine.week:02d}",
     )
+    if creee:
+        Notification.objects.filter(pk=notification.pk).update(par_courriel=True)
+    return creee
+
+def resume_periodique(destinataire, chiffres, nouveaux, aujourdhui):
+    """Envoie à un responsable le résumé hebdomadaire de ses indicateurs.
+
+    La clé contient la semaine : un seul résumé par personne et par semaine, même si
+    la commande est relancée. Retourne True si le résumé vient d'être créé.
+    """
+    semaine = aujourdhui.isocalendar()
+    message = (
+        f"Résumé de la semaine {semaine.week} : {chiffres['total']} prospect(s) "
+        f"dont {nouveaux} nouveau(x), {chiffres['gagnes']} gagné(s) "
+        f"({chiffres['taux_conversion']} % de conversion), "
+        f"{chiffres['relances_en_retard']} tâche(s) en retard"
+    )
+    # Les contrats à valider ne concernent que les personnes habilitées (droit V).
+    if chiffres["contrats_a_valider"] is not None:
+        message += f", {chiffres['contrats_a_valider']} contrat(s) à valider"
+    message += "."
+    notification, creee = notifier(
+        destinataire,
+        RESUME_PERIODIQUE,
+        message,
+        priorite=Notification.Priorite.BASSE,
+        lien=reverse("tableau_de_bord"),
+        cle=f"resume:{semaine.year}-S{semaine.week:02d}",
+    )
+    # La matrice prévoit l'e-mail pour ce résumé.
     if creee:
         Notification.objects.filter(pk=notification.pk).update(par_courriel=True)
     return creee
