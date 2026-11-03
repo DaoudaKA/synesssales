@@ -159,3 +159,8 @@ N°	Décision
 98	Droits : consultation avec L, C ou M ; modification avec M. Selon la matrice, l’administrateur système (CMA) et le Responsable commercial (M*) peuvent modifier. Ces valeurs étant globales, le périmètre « * » du Responsable commercial n’est pas restreint : à valider avec SYNESS.
 99	Chaque changement de valeur est inscrit au journal d’audit, avec l’ancienne et la nouvelle valeur. Enregistrer sans rien changer ne crée ni ligne de paramètre ni ligne d’audit.
 100	Le paramétrage couvre pour l’instant les seuils et délais numériques. Les destinataires, priorités et canaux par événement restent fixés dans le code, selon la matrice ; un réglage par événement pourra s’ajouter si SYNESS le demande.
+
+
+101	« Doublon détecté » : le destinataire est le Responsable data, défini par le droit de validation (V) sur les fiches partenaires avec la portée « toute ». La détection elle-même (detecter_doublons) n’est pas modifiée.
+102	Les alertes sont regroupées : un seul message récapitule le nombre de doublons ouverts, pas un message par doublon (matrice : « Regroupé »). Priorité basse, canal application.
+103	Pour éviter les répétitions, la clé du message contient la semaine et le nombre de doublons : un nouveau message n’est créé que si ce nombre change, ou une fois par semaine à nombre égal (rappel).
