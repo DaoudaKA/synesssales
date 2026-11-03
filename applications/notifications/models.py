@@ -51,3 +51,26 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.type} → {self.destinataire}"
+
+
+
+
+class Parametre(models.Model):
+    """Valeur d'un seuil ou d'un délai réglé depuis l'écran de paramétrage.
+
+    Sans ligne enregistrée, c'est la valeur par défaut du projet (settings) qui s'applique.
+    """
+
+    cle = models.CharField(max_length=60, unique=True)
+    valeur = models.PositiveIntegerField()
+    modifie_par = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    date_modification = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "paramètre de notification"
+        verbose_name_plural = "paramètres de notification"
+
+    def __str__(self):
+        return f"{self.cle} = {self.valeur}"
