@@ -135,3 +135,11 @@ Ce fichier garde la trace des décisions du projet : quoi, quand, qui, et avec q
 80	« Relance à échéance » : un rappel de priorité Haute est envoyé au commercial pour toute tâche (hors rendez-vous) dont l’échéance tombe dans les 24 heures (réglage DELAI_RAPPEL_ECHEANCE_HEURES). Délai proposé, à valider avec SYNESS.
 81	« Rendez-vous imminent » : alerte Haute pour un rendez-vous qui commence dans les 2 heures (réglage DELAI_RDV_IMMINENT_HEURES). Canal application pour l’instant ; SMS ou messagerie viendront en option (plan, section 6).
 82	Une seule commande (verifier_relances) traite retards, escalades, rappels d’échéance et rendez-vous imminents. Elle est conçue pour tourner souvent (par exemple toutes les 15 minutes) ; la planification sera mise en place au déploiement.
+
+
+N°	Décision
+86	Le canal e-mail est un drapeau sur la notification (par_courriel), pas une seconde notification : la cloche et l’historique restent la référence. L’envoi est fait par une commande planifiée (envoyer_courriels), conformément au plan (section 6.1).
+87	Seul « contrat à valider » part aussi par e-mail pour l’instant (matrice : application + e-mail). « Objectif en écart » et « résumé périodique » suivront. La décision sur un contrat reste dans l’application.
+88	En cas d’échec, l’erreur est conservée et l’envoi réessayé à l’exécution suivante, jusqu’à 3 tentatives (COURRIEL_MAX_TENTATIVES). Plafond de 100 e-mails par exécution (COURRIEL_PLAFOND_PAR_EXECUTION), le reste attend.
+89	La configuration vient de l’environnement : sans EMAIL_HOST, les e-mails s’affichent dans la console (aucun envoi accidentel hors production). Les liens des e-mails sont absolus grâce à SITE_URL.
+90	Seuls les comptes actifs reçoivent des e-mails. Aucun e-mail n’est envoyé à un prospect : les notifications s’adressent aux utilisateurs internes. Un fournisseur de SMS reste hors périmètre tant que SYNESS n’a pas validé l’intérêt et le budget.
