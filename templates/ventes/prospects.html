@@ -3,16 +3,17 @@
 {% block contenu %}
 <div class="carte">
   <h1>Prospects</h1>
-  <p>
+   <p>
     <a href="{% url 'relances' %}">Mes relances</a>
     {% if peut_valider_contrats %}
       — <a href="{% url 'contrats_a_valider' %}">Contrats à valider</a>
     {% endif %}
-
-        {% if peut_voir_objectifs %}
+    {% if peut_voir_objectifs %}
       — <a href="{% url 'objectifs' %}">Objectifs</a>
     {% endif %}
-
+    {% if peut_voir_tableau %}
+      — <a href="{% url 'tableau_de_bord' %}">Tableau de bord</a>
+    {% endif %}
   </p>
   <p>{{ prospects|length }} prospect(s) visible(s) avec vos droits.</p>
   <table>
