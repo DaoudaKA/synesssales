@@ -99,3 +99,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Nombre de jours de retard au-delà desquels une relance non faite est signalée
 # au chef d'équipe du commercial (escalade).
 SEUIL_ESCALADE_RELANCES_JOURS = 2
+
+# Une tâche (hors rendez-vous) dont l'échéance tombe dans ce délai déclenche un rappel.
+DELAI_RAPPEL_ECHEANCE_HEURES = 24
+# Un rendez-vous qui commence dans ce délai est signalé comme imminent.
+DELAI_RDV_IMMINENT_HEURES = 2

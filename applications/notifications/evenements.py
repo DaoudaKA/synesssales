@@ -21,6 +21,8 @@ CONTRAT_VALIDE = "contrat_valide"
 CONTRAT_REFUSE = "contrat_refuse"
 RELANCE_EN_RETARD = "relance_en_retard"
 RELANCE_ESCALADEE = "relance_escaladee"
+RELANCE_A_ECHEANCE = "relance_a_echeance"
+RDV_IMMINENT = "rdv_imminent"
 
 
 def _lien_prospect(prospect):
@@ -133,7 +135,7 @@ def relance_en_retard(tache):
         RELANCE_EN_RETARD,
         f"Tâche en retard ({tache.get_type_display()}) pour « {prospect.nom} » : "
         f"l'échéance était le {timezone.localtime(tache.echeance):%d/%m/%Y à %H:%M}.",
-        priorite=Notification.Priorite.MOYENNE,
+        priorite=Notification.Priorite.HAUTE,
         lien=_lien_prospect(prospect),
         cle=f"relance-en-retard:{tache.pk}",
     )
@@ -154,5 +156,43 @@ def relance_escaladee(tache, chef, jours):
         priorite=Notification.Priorite.HAUTE,
         lien=_lien_prospect(prospect),
         cle=f"relance-escaladee:{tache.pk}",
+    )
+    return creee
+
+
+
+def relance_a_echeance(tache):
+    """Rappelle au commercial une tâche dont l'échéance approche.
+
+    Retourne True si le rappel vient d'être créé (une seule fois par tâche).
+    """
+    prospect = tache.prospect
+    _, creee = notifier(
+        tache.responsable,
+        RELANCE_A_ECHEANCE,
+        f"À faire avant le {timezone.localtime(tache.echeance):%d/%m/%Y à %H:%M} "
+        f"({tache.get_type_display()}) pour « {prospect.nom} ».",
+        priorite=Notification.Priorite.HAUTE,
+        lien=_lien_prospect(prospect),
+        cle=f"relance-a-echeance:{tache.pk}",
+    )
+    return creee
+
+
+def rendez_vous_imminent(tache):
+    """Prévient le commercial qu'un rendez-vous approche.
+
+    Retourne True si l'alerte vient d'être créée (une seule fois par rendez-vous).
+    """
+    prospect = tache.prospect
+    _, creee = notifier(
+        tache.responsable,
+        RDV_IMMINENT,
+        f"Rendez-vous à {timezone.localtime(tache.echeance):%H:%M} le "
+        f"{timezone.localtime(tache.echeance):%d/%m/%Y} avec « {prospect.nom} » : "
+        "pensez à le préparer.",
+        priorite=Notification.Priorite.HAUTE,
+        lien=_lien_prospect(prospect),
+        cle=f"rdv-imminent:{tache.pk}",
     )
     return creee
