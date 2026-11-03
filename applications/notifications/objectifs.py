@@ -1,11 +1,10 @@
 """Détection des objectifs en écart par rapport à la période écoulée."""
-from django.conf import settings
 from django.utils import timezone
 
 from applications.ventes.models import Objectif
 from applications.ventes.services import avancement
 
-from . import evenements
+from . import evenements, parametres
 
 
 def verifier_objectifs(aujourdhui=None, tolerance=None):
@@ -17,7 +16,7 @@ def verifier_objectifs(aujourdhui=None, tolerance=None):
     """
     aujourdhui = aujourdhui or timezone.localdate()
     if tolerance is None:
-        tolerance = getattr(settings, "TOLERANCE_ECART_OBJECTIF_POINTS", 20)
+        tolerance = parametres.valeur("TOLERANCE_ECART_OBJECTIF_POINTS")
 
     # Seuls les objectifs en cours sont suivis (ni à venir, ni terminés).
     objectifs = Objectif.objects.filter(

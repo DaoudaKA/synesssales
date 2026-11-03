@@ -1,14 +1,13 @@
 """Détection des relances en retard et escalade au chef d'équipe."""
 import datetime
 
-from django.conf import settings
 from django.db.models import Max
 from django.utils import timezone
 
 from applications.ventes.models import Prospect, Tache
 from applications.ventes.services import STATUTS_CLOS
 
-from . import evenements
+from . import evenements, parametres
 
 
 def verifier_relances(maintenant=None, seuil_jours=None):
@@ -24,7 +23,7 @@ def verifier_relances(maintenant=None, seuil_jours=None):
     """
     maintenant = maintenant or timezone.now()
     if seuil_jours is None:
-        seuil_jours = getattr(settings, "SEUIL_ESCALADE_RELANCES_JOURS", 2)
+        seuil_jours = parametres.valeur("SEUIL_ESCALADE_RELANCES_JOURS")
 
     en_retard = Tache.objects.filter(
         statut=Tache.Statut.A_FAIRE, echeance__lt=maintenant, responsable__isnull=False
@@ -59,9 +58,9 @@ def verifier_rappels(maintenant=None, delai_echeance_heures=None, delai_rdv_heur
     """
     maintenant = maintenant or timezone.now()
     if delai_echeance_heures is None:
-        delai_echeance_heures = getattr(settings, "DELAI_RAPPEL_ECHEANCE_HEURES", 24)
+        delai_echeance_heures = parametres.valeur("DELAI_RAPPEL_ECHEANCE_HEURES")
     if delai_rdv_heures is None:
-        delai_rdv_heures = getattr(settings, "DELAI_RDV_IMMINENT_HEURES", 2)
+        delai_rdv_heures = parametres.valeur("DELAI_RDV_IMMINENT_HEURES")
 
     horizon = maintenant + datetime.timedelta(hours=max(delai_echeance_heures, delai_rdv_heures))
     a_venir = Tache.objects.filter(
@@ -92,7 +91,7 @@ def verifier_sans_suivi(maintenant=None, seuil_jours=None):
     """
     maintenant = maintenant or timezone.now()
     if seuil_jours is None:
-        seuil_jours = getattr(settings, "SEUIL_SANS_SUIVI_JOURS", 7)
+        seuil_jours = parametres.valeur("SEUIL_SANS_SUIVI_JOURS")
 
     prospects = (
         Prospect.objects.exclude(statut__in=STATUTS_CLOS)
