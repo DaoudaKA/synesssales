@@ -132,3 +132,7 @@ SITE_URL = os.environ.get("SITE_URL", "http://127.0.0.1:8000")
 # Tentatives d'envoi maximum par notification, et nombre maximum d'e-mails par exécution.
 COURRIEL_MAX_TENTATIVES = 3
 COURRIEL_PLAFOND_PAR_EXECUTION = 100
+
+# Un objectif est « en écart » quand son avancement est inférieur de ce nombre de points
+# (ou plus) à la part de la période déjà écoulée.
+TOLERANCE_ECART_OBJECTIF_POINTS = 20

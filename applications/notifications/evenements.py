@@ -24,6 +24,7 @@ RELANCE_ESCALADEE = "relance_escaladee"
 RELANCE_A_ECHEANCE = "relance_a_echeance"
 RDV_IMMINENT = "rdv_imminent"
 PROSPECT_SANS_SUIVI = "prospect_sans_suivi"
+OBJECTIF_EN_ECART = "objectif_en_ecart"
 
 
 def _lien_prospect(prospect):
@@ -217,4 +218,39 @@ def prospect_sans_suivi(prospect, chef, jours, reference):
         lien=_lien_prospect(prospect),
         cle=f"sans-suivi:{prospect.pk}:{timezone.localtime(reference):%Y%m%d}",
     )
+    return creee
+
+
+def responsables_objectifs():
+    """Personnes qui pilotent les objectifs : droit de modification, portée « toute ».
+
+    C'est le cas du Responsable commercial. Les chefs d'équipe (consultation limitée
+    à leur périmètre) et l'administrateur (lecture seule) ne sont pas concernés.
+    """
+    return [
+        personne
+        for personne in get_user_model().objects.filter(statut="actif")
+        if "toute" in portees(personne, "Campagnes et objectifs", "M")
+    ]
+
+
+def objectif_en_ecart(destinataire, objectif, realise, taux, attendu, aujourdhui):
+    """Alerte un responsable qu'un objectif est en retard sur la période écoulée.
+
+    La clé contient la semaine : une alerte par objectif, par personne et par semaine.
+    Retourne True si l'alerte vient d'être créée (application + e-mail).
+    """
+    semaine = aujourdhui.isocalendar()
+    notification, creee = notifier(
+        destinataire,
+        OBJECTIF_EN_ECART,
+        f"Objectif en écart ({objectif.porteur}, « {objectif.produit} ») : "
+        f"{realise}/{objectif.cible} contrat(s) validé(s), soit {round(taux)} % de la cible, "
+        f"alors que {attendu} % de la période est écoulée.",
+        priorite=Notification.Priorite.MOYENNE,
+        lien=reverse("objectifs"),
+        cle=f"objectif-en-ecart:{objectif.pk}:{semaine.year}-S{semaine.week:02d}",
+    )
+    if creee:
+        Notification.objects.filter(pk=notification.pk).update(par_courriel=True)
     return creee
