@@ -1,4 +1,5 @@
 """Réglages communs à tous les environnements."""
+import os
 from pathlib import Path
 
 import environ
@@ -107,3 +108,27 @@ DELAI_RDV_IMMINENT_HEURES = 2
 
 # Un prospect en cours sans activité depuis ce nombre de jours est signalé au chef d'équipe.
 SEUIL_SANS_SUIVI_JOURS = 7
+
+
+
+# --- E-mail (canal de notification) ---
+# Sans serveur configuré (variable EMAIL_HOST), les e-mails s'affichent dans la console :
+# aucun envoi accidentel en développement ou en test.
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = True
+EMAIL_BACKEND = (
+    "django.core.mail.backends.smtp.EmailBackend"
+    if EMAIL_HOST
+    else "django.core.mail.backends.console.EmailBackend"
+)
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL", "SYNESS Sales <no-reply@synesssales.local>"
+)
+# Adresse publique de l'application, pour les liens placés dans les e-mails.
+SITE_URL = os.environ.get("SITE_URL", "http://127.0.0.1:8000")
+# Tentatives d'envoi maximum par notification, et nombre maximum d'e-mails par exécution.
+COURRIEL_MAX_TENTATIVES = 3
+COURRIEL_PLAFOND_PAR_EXECUTION = 100
