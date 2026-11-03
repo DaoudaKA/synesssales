@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block titre %}Paramétrage des notifications — SYNESS Sales{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>Paramétrage des notifications</h1>
+  <p>Seuils et délais qui déclenchent les alertes et les escalades.</p>
+
+  {% if enregistres is not None %}
+    <p><strong>{{ enregistres }} paramètre(s) enregistré(s).</strong></p>
+  {% endif %}
+  {% if not peut_modifier %}
+    <p>Vous pouvez consulter ces réglages, mais pas les modifier.</p>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    {% for champ in formulaire %}
+      <p>
+        <label for="{{ champ.id_for_label }}">{{ champ.label }}</label><br>
+        {{ champ }}
+        <br><small>{{ champ.help_text }}</small>
+        {% for erreur in champ.errors %}<br><strong>{{ erreur }}</strong>{% endfor %}
+      </p>
+    {% endfor %}
+    {% if peut_modifier %}<button type="submit">Enregistrer</button>{% endif %}
+  </form>
+</div>
+{% endblock %}

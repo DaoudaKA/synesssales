@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% block titre %}Mes notifications — SYNESS Sales{% endblock %}
 {% block contenu %}
+{% if peut_parametrer_notifications %}
+  <p><a href="{% url 'parametrage_notifications' %}">Paramétrer les notifications</a></p>
+{% endif %}
 <div class="carte">
   <h1>Mes notifications</h1>
   {% if nombre_notifications %}
