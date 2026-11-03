@@ -85,9 +85,9 @@ def validateurs_du_contrat(contrat):
 
 
 def contrat_soumis(contrat):
-    """Prévient les validateurs qu'un contrat attend une décision."""
+    """Prévient les validateurs qu'un contrat attend une décision (application + e-mail)."""
     for validateur in validateurs_du_contrat(contrat):
-        notifier(
+        notification, creee = notifier(
             validateur,
             CONTRAT_A_VALIDER,
             f"Un contrat est à valider pour le prospect « {contrat.prospect.nom} ».",
@@ -97,7 +97,9 @@ def contrat_soumis(contrat):
             lien=reverse("contrats_a_valider"),
             cle=f"contrat-a-valider:{contrat.pk}",
         )
-
+        # La matrice prévoit aussi l'e-mail : on le demande une seule fois, à la création.
+        if creee:
+            Notification.objects.filter(pk=notification.pk).update(par_courriel=True)
 
 def contrat_decide(contrat):
     """Prévient le commercial du prospect de la décision prise sur son contrat."""
