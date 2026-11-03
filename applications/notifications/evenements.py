@@ -26,7 +26,7 @@ RDV_IMMINENT = "rdv_imminent"
 PROSPECT_SANS_SUIVI = "prospect_sans_suivi"
 OBJECTIF_EN_ECART = "objectif_en_ecart"
 RESUME_PERIODIQUE = "resume_periodique"
-
+DOUBLONS_A_TRAITER = "doublons_a_traiter"
 
 def _lien_prospect(prospect):
     """Adresse de la fiche du prospect."""
@@ -284,4 +284,35 @@ def resume_periodique(destinataire, chiffres, nouveaux, aujourdhui):
     # La matrice prévoit l'e-mail pour ce résumé.
     if creee:
         Notification.objects.filter(pk=notification.pk).update(par_courriel=True)
+    return creee
+
+
+def responsables_data():
+    """Personnes qui valident les fiches partenaires (droit V, portée « toute »).
+
+    D'après la matrice, c'est le Responsable data.
+    """
+    return [
+        personne
+        for personne in get_user_model().objects.filter(statut="actif")
+        if "toute" in portees(personne, "Fiches partenaires", "V")
+    ]
+
+
+def doublons_a_traiter(destinataire, nombre, aujourdhui):
+    """Prévient le responsable data de l'ensemble des doublons en attente (regroupé).
+
+    La clé contient la semaine et le nombre de doublons : pas de répétition tant que
+    rien ne change, rappel au plus une fois par semaine. Retourne True si créée.
+    """
+    semaine = aujourdhui.isocalendar()
+    _, creee = notifier(
+        destinataire,
+        DOUBLONS_A_TRAITER,
+        f"{nombre} doublon(s) potentiel(s) de fiches partenaires à traiter : "
+        "fusionner ou rejeter.",
+        priorite=Notification.Priorite.BASSE,
+        lien=reverse("doublons"),
+        cle=f"doublons:{semaine.year}-S{semaine.week:02d}:{nombre}",
+    )
     return creee
