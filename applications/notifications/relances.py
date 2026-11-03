@@ -2,9 +2,11 @@
 import datetime
 
 from django.conf import settings
+from django.db.models import Max
 from django.utils import timezone
 
-from applications.ventes.models import Tache
+from applications.ventes.models import Prospect, Tache
+from applications.ventes.services import STATUTS_CLOS
 
 from . import evenements
 
@@ -79,4 +81,36 @@ def verifier_rappels(maintenant=None, delai_echeance_heures=None, delai_rdv_heur
         elif reste <= datetime.timedelta(hours=delai_echeance_heures):
             if evenements.relance_a_echeance(tache):
                 bilan["relances_a_echeance"] += 1
+    return bilan
+
+
+def verifier_sans_suivi(maintenant=None, seuil_jours=None):
+    """Alerte le chef d'équipe des prospects en cours restés sans activité.
+
+    Ne concerne que les prospects suivis par un commercial dont l'équipe a un chef.
+    Le chef n'est pas alerté pour les prospects qu'il suit lui-même.
+    """
+    maintenant = maintenant or timezone.now()
+    if seuil_jours is None:
+        seuil_jours = getattr(settings, "SEUIL_SANS_SUIVI_JOURS", 7)
+
+    prospects = (
+        Prospect.objects.exclude(statut__in=STATUTS_CLOS)
+        .filter(commercial__isnull=False, equipe__chef_equipe__isnull=False)
+        .annotate(dernier_contact=Max("activites__date"))
+        .select_related("equipe__chef_equipe", "commercial")
+    )
+
+    bilan = {"sans_suivi": 0}
+    for prospect in prospects:
+        # Sans aucune activité, on compte depuis la création du prospect.
+        reference = prospect.dernier_contact or prospect.date_creation
+        silence = maintenant - reference
+        if silence < datetime.timedelta(days=seuil_jours):
+            continue
+        chef = prospect.equipe.chef_equipe
+        if chef == prospect.commercial:
+            continue
+        if evenements.prospect_sans_suivi(prospect, chef, silence.days, reference):
+            bilan["sans_suivi"] += 1
     return bilan
