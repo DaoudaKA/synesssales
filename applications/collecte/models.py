@@ -17,6 +17,21 @@ class SourceDonnees(models.Model):
         help_text="Les conditions d'usage de la source ont été vérifiées (chapitre 4.7).",
     )
 
+        # Trace de la validation par SYNESS : qui l'a enregistrée, quand, sur quelle base.
+    validee_par = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    date_validation = models.DateField(null=True, blank=True)
+    reference_validation = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Document de SYNESS qui valide la source (courriel, compte rendu...).",
+    )
+
     class Meta:
         verbose_name = "source de données"
         verbose_name_plural = "sources de données"
