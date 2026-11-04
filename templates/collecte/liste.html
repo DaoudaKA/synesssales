@@ -3,6 +3,7 @@
 {% block contenu %}
 <div class="carte">
   <h1>Collectes</h1>
+  <p><a href="{% url 'sources' %}">Sources de données</a></p>
   {% if peut_importer %}
     <p><a href="{% url 'collecte_importer' %}">Importer un fichier CSV</a></p>
   {% endif %}

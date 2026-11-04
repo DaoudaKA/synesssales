@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block titre %}Nouvelle source — SYNESS Sales{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <h1>Nouvelle source de données</h1>
+  <p>La source sera créée « non autorisée » : la validation de SYNESS s'enregistre ensuite.</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ formulaire.as_p }}
+    <button type="submit">Créer la source</button>
+    <a href="{% url 'sources' %}">Annuler</a>
+  </form>
+</div>
+{% endblock %}
