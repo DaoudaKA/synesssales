@@ -164,3 +164,9 @@ N°	Décision
 101	« Doublon détecté » : le destinataire est le Responsable data, défini par le droit de validation (V) sur les fiches partenaires avec la portée « toute ». La détection elle-même (detecter_doublons) n’est pas modifiée.
 102	Les alertes sont regroupées : un seul message récapitule le nombre de doublons ouverts, pas un message par doublon (matrice : « Regroupé »). Priorité basse, canal application.
 103	Pour éviter les répétitions, la clé du message contient la semaine et le nombre de doublons : un nouveau message n’est créé que si ce nombre change, ou une fois par semaine à nombre égal (rappel).
+
+104	Une source ne devient « autorisée » qu’avec une référence du document de validation de SYNESS. La plateforme enregistre qui a saisi la validation, quand, et sur quelle base ; sans référence, la validation est impossible.
+105	Droits suivant la ligne « Collectes et imports » : consultation avec L, C ou M ; création d’une source avec C ; validation et révocation avec M (Responsable data). L’administrateur système et l’analyste consultent seulement. La décision reste celle de SYNESS : la plateforme l’enregistre.
+106	Le contrôle d’autorisation est une fonction centrale (verifier_source_autorisee) qui lève SourceNonAutorisee, sous-classe d’ImportInvalide. Les écrans existants continuent de fonctionner, et tous les futurs connecteurs devront l’appeler avant de démarrer.
+107	Retirer l’autorisation exige un motif, est journalisé, et conserve la trace de la dernière validation. Une source retirée est refusée immédiatement.
+108	Les sources déjà validées avant cette fonction sont affichées « validée avant l’ajout de la traçabilité » : SYNESS devra confirmer leur validation, que le Responsable data pourra alors enregistrer.
