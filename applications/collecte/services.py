@@ -39,6 +39,50 @@ PAYS_PAR_DEFAUT = "Sénégal"
 class ImportInvalide(Exception):
     """Le fichier ou la source ne permet pas de lancer l'import."""
 
+class SourceNonAutorisee(ImportInvalide):
+    """La source n'a pas été validée par SYNESS : aucune collecte n'est permise."""
+
+
+def verifier_source_autorisee(source):
+    """Garde centrale : tout import ou connecteur doit l'appeler avant de commencer.
+
+    Règle du chapitre 4.7 : jamais de collecte depuis une source non validée.
+    """
+    if not source.conditions_validees:
+        raise SourceNonAutorisee("Les conditions d'usage de cette source ne sont pas validées.")
+
+
+def valider_source(source, utilisateur, reference):
+    """Enregistre la validation de SYNESS : qui, quand et sur quelle base.
+
+    La référence du document est obligatoire : sans trace, pas de validation.
+    """
+    reference = (reference or "").strip()
+    if not reference:
+        raise ValueError("La référence du document de validation est obligatoire.")
+    source.conditions_validees = True
+    source.validee_par = utilisateur
+    source.date_validation = timezone.localdate()
+    source.reference_validation = reference
+    source.save(
+        update_fields=[
+            "conditions_validees",
+            "validee_par",
+            "date_validation",
+            "reference_validation",
+        ]
+    )
+    return source
+
+
+def revoquer_source(source, motif):
+    """Retire l'autorisation. La trace de la dernière validation est conservée."""
+    if not (motif or "").strip():
+        raise ValueError("Une révocation doit être motivée.")
+    source.conditions_validees = False
+    source.save(update_fields=["conditions_validees"])
+    return source
+
 
 def lire_lignes(contenu):
     """Transforme le contenu du fichier (octets) en liste de dictionnaires."""
@@ -117,8 +161,8 @@ def _creer_fiche(ligne, collecte):
 def importer_csv(contenu, source):
     """Importe un fichier CSV. Retourne (collecte, liste des erreurs par ligne)."""
     # Règle du chapitre 4.7 : jamais d'import depuis une source non validée.
-    if not source.conditions_validees:
-        raise ImportInvalide("Les conditions d'usage de cette source ne sont pas validées.")
+
+    verifier_source_autorisee(source)
     lignes = lire_lignes(contenu)  # avant toute écriture : un fichier invalide ne laisse rien
 
     collecte = Collecte.objects.create(source=source, date_debut=timezone.now())
