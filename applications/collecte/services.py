@@ -1,6 +1,7 @@
 """Services de la collecte : import de fiches partenaires depuis un fichier CSV."""
 import csv
 import io
+import json
 
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
@@ -16,7 +17,7 @@ from applications.partenaires.models import (
 )
 from applications.partenaires.services import detecter_doublons
 
-from .models import Collecte, Provenance
+from .models import Collecte, LigneRejetee, Provenance
 
 COLONNE_OBLIGATOIRE = "nom_commercial"
 
@@ -158,32 +159,58 @@ def _creer_fiche(ligne, collecte):
             )
     return fiche
 
+def _est_incomplete(ligne):
+    """Une fiche est incomplète si elle n'a aucun moyen de contact ou aucune ville."""
+
+    def valeur(colonne):
+        return (ligne.get(colonne) or "").strip()
+
+    sans_contact = not valeur("telephone") and not valeur("email")
+    return sans_contact or not valeur("ville")
+
+
+def _apercu(ligne):
+    """Contenu de la ligne rejetée, tronqué à 500 caractères pour le journal."""
+    return json.dumps(ligne, ensure_ascii=False, default=str)[:500]
+
+
 
 def traiter_lignes(lignes, source, version_connecteur=""):
     """Pipeline commun à l'import de fichier et aux connecteurs.
 
-    Crée la collecte, une fiche par ligne valide (avec sa provenance), puis détecte les
-    doublons. Retourne (collecte, liste des erreurs par ligne).
+    Crée la collecte, une fiche par ligne valide (avec sa provenance), journalise chaque
+    ligne rejetée, compte les fiches incomplètes, puis détecte les doublons.
+    Retourne (collecte, liste des erreurs par ligne).
     """
     collecte = Collecte.objects.create(
         source=source, date_debut=timezone.now(), version_connecteur=version_connecteur
     )
-    fiches, erreurs = [], []
+    fiches, erreurs, incompletes = [], [], 0
     # La ligne 1 du fichier contient les en-têtes : les données commencent à la ligne 2.
     for numero, ligne in enumerate(lignes, start=2):
         try:
             # Une transaction par ligne : une ligne en erreur n'annule pas les autres.
             with transaction.atomic():
                 fiches.append(_creer_fiche(ligne, collecte))
+            if _est_incomplete(ligne):
+                incompletes += 1
         except ValidationError as erreur:
-            erreurs.append((numero, " ".join(erreur.messages)))
+            motif = " ".join(erreur.messages)
+            erreurs.append((numero, motif))
+            # Journal détaillé : la ligne refusée reste consultable après la collecte.
+            LigneRejetee.objects.create(
+                collecte=collecte, numero=numero, motif=motif[:300], contenu=_apercu(ligne)
+            )
 
     # La détection se fait après la création de toutes les fiches de la collecte.
+    doublons = 0
     for fiche in fiches:
-        detecter_doublons(fiche)
+        doublons += len(detecter_doublons(fiche))
 
     collecte.nb_fiches = len(fiches)
     collecte.nb_erreurs = len(erreurs)
+    collecte.nb_incomplets = incompletes
+    collecte.nb_doublons = doublons
     collecte.date_fin = timezone.now()
     # « En erreur » seulement si rien n'a pu être importé.
     if erreurs and not fiches:
