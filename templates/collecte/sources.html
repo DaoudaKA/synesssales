@@ -18,7 +18,10 @@
     {% for source in sources %}
       <tr>
         <td>{{ source.nom }}{% if source.url %}<br><small>{{ source.url }}</small>{% endif %}</td>
-        <td>{{ source.type|default:"—" }}</td>
+        <td>
+          {{ source.type|default:"—" }}
+          {% if source.code_connecteur %}<br><small>Connecteur : {{ source.code_connecteur }}</small>{% endif %}
+        </td>
         <td>
           {% if source.conditions_validees %}
             Autorisée
