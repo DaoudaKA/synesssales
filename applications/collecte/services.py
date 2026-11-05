@@ -39,6 +39,7 @@ PAYS_PAR_DEFAUT = "Sénégal"
 class ImportInvalide(Exception):
     """Le fichier ou la source ne permet pas de lancer l'import."""
 
+
 class SourceNonAutorisee(ImportInvalide):
     """La source n'a pas été validée par SYNESS : aucune collecte n'est permise."""
 
@@ -158,14 +159,15 @@ def _creer_fiche(ligne, collecte):
     return fiche
 
 
-def importer_csv(contenu, source):
-    """Importe un fichier CSV. Retourne (collecte, liste des erreurs par ligne)."""
-    # Règle du chapitre 4.7 : jamais d'import depuis une source non validée.
+def traiter_lignes(lignes, source, version_connecteur=""):
+    """Pipeline commun à l'import de fichier et aux connecteurs.
 
-    verifier_source_autorisee(source)
-    lignes = lire_lignes(contenu)  # avant toute écriture : un fichier invalide ne laisse rien
-
-    collecte = Collecte.objects.create(source=source, date_debut=timezone.now())
+    Crée la collecte, une fiche par ligne valide (avec sa provenance), puis détecte les
+    doublons. Retourne (collecte, liste des erreurs par ligne).
+    """
+    collecte = Collecte.objects.create(
+        source=source, date_debut=timezone.now(), version_connecteur=version_connecteur
+    )
     fiches, erreurs = [], []
     # La ligne 1 du fichier contient les en-têtes : les données commencent à la ligne 2.
     for numero, ligne in enumerate(lignes, start=2):
@@ -176,7 +178,7 @@ def importer_csv(contenu, source):
         except ValidationError as erreur:
             erreurs.append((numero, " ".join(erreur.messages)))
 
-    # La détection se fait après la création de toutes les fiches du fichier.
+    # La détection se fait après la création de toutes les fiches de la collecte.
     for fiche in fiches:
         detecter_doublons(fiche)
 
@@ -190,3 +192,11 @@ def importer_csv(contenu, source):
         collecte.statut = Collecte.Statut.TERMINEE
     collecte.save()
     return collecte, erreurs
+
+
+def importer_csv(contenu, source):
+    """Importe un fichier CSV. Retourne (collecte, liste des erreurs par ligne)."""
+    # Règle du chapitre 4.7 : jamais d'import depuis une source non validée.
+    verifier_source_autorisee(source)
+    lignes = lire_lignes(contenu)  # avant toute écriture : un fichier invalide ne laisse rien
+    return traiter_lignes(lignes, source)
