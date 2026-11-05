@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views, vues_sources
+from . import views, vues_rapport, vues_sources
 
 urlpatterns = [
     path("collectes/", views.liste_collectes, name="collectes"),
@@ -9,4 +9,5 @@ urlpatterns = [
     path("sources/nouvelle/", vues_sources.nouvelle_source, name="source_nouvelle"),
     path("sources/<int:pk>/validation/", vues_sources.validation_source, name="source_validation"),
     path("sources/<int:pk>/revocation/", vues_sources.revocation_source, name="source_revocation"),
+    path("collectes/<int:pk>/", vues_rapport.rapport_collecte, name="collecte_rapport"),
 ]
