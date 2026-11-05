@@ -63,6 +63,9 @@ class Collecte(models.Model):
     # Version du connecteur utilisé, pour reproduire une collecte, et motif d'un échec.
     version_connecteur = models.CharField(max_length=20, blank=True)
     message_erreur = models.TextField(blank=True)
+        # Compteurs de qualité : fiches sans contact ou sans ville, doublons détectés.
+    nb_incomplets = models.PositiveIntegerField(default=0)
+    nb_doublons = models.PositiveIntegerField(default=0)
 
     class Meta:
         verbose_name = "collecte"
@@ -172,3 +175,19 @@ class AlerteDoublon(models.Model):
 
     def __str__(self):
         return f"{self.partenaire_a} / {self.partenaire_b} ({self.score_similarite:.2f})"
+
+
+class LigneRejetee(models.Model):
+    """Journal d'une ligne refusée pendant une collecte : où, pourquoi, et son contenu."""
+
+    collecte = models.ForeignKey(Collecte, on_delete=models.CASCADE, related_name="rejets")
+    numero = models.PositiveIntegerField(help_text="Numéro de la ligne dans la source.")
+    motif = models.CharField(max_length=300)
+    # Aperçu tronqué de la ligne : de quoi comprendre l'erreur sans stocker de gros volumes.
+    contenu = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["numero"]
+
+    def __str__(self):
+        return f"Ligne {self.numero} : {self.motif}"
