@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block titre %}Rapport de collecte{% endblock %}
+{% block contenu %}
+<div class="carte">
+  <p><a href="{% url 'collectes' %}">&larr; Retour aux collectes</a></p>
+  <h1>Collecte n° {{ collecte.pk }} : {{ collecte.source.nom }}</h1>
+  <p>
+    {{ collecte.get_statut_display }}, démarrée le {{ collecte.date_debut|date:"d/m/Y H:i" }}
+    {% if duree_secondes is not None %}(durée : {{ duree_secondes }} s){% endif %}
+    {% if collecte.version_connecteur %}<br>Connecteur version {{ collecte.version_connecteur }}{% endif %}
+  </p>
+
+  {% if collecte.message_erreur %}
+    <p><strong>Erreur :</strong> {{ collecte.message_erreur }}</p>
+  {% endif %}
+
+  <h2>Qualité</h2>
+  <table>
+    <tr><th>Lignes traitées</th><td>{{ lignes_traitees }}</td></tr>
+    <tr><th>Fiches collectées</th><td>{{ collecte.nb_fiches }}</td></tr>
+    <tr><th>Lignes rejetées</th><td>{{ collecte.nb_erreurs }} ({{ taux_rejet }} %)</td></tr>
+    <tr><th>Fiches incomplètes (sans contact ou sans ville)</th><td>{{ collecte.nb_incomplets }}</td></tr>
+    <tr><th>Doublons potentiels détectés</th><td>{{ collecte.nb_doublons }}</td></tr>
+  </table>
+
+  <h2>Lignes rejetées</h2>
+  {% if rejets %}
+    <table>
+      <thead><tr><th>Ligne</th><th>Motif</th><th>Contenu</th></tr></thead>
+      <tbody>
+      {% for rejet in rejets %}
+        <tr>
+          <td>{{ rejet.numero }}</td>
+          <td>{{ rejet.motif }}</td>
+          <td><small>{{ rejet.contenu }}</small></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% if rejets_tronques %}<p><small>Affichage limité aux premières lignes rejetées.</small></p>{% endif %}
+  {% else %}
+    <p>Aucune ligne rejetée.</p>
+  {% endif %}
+</div>
+{% endblock %}
