@@ -184,3 +184,12 @@ N°	Décision
 111	Un échec de récupération n’interrompt pas l’appelant : il est enregistré comme collecte « en erreur » avec son message, ce qui permet les relances et la notification au responsable data.
 112	Le connecteur demonstration est fictif (noms inventés, aucun accès réseau). Il sert aux tests et à la démonstration. Une vraie source aura un connecteur dédié, écrit seulement après la validation écrite de SYNESS.
 113	Chaque collecte conserve la version du connecteur utilisé. Le délai minimal entre requêtes est appliqué par espacer(), que chaque connecteur doit appeler avant une requête réseau. Volume maximal par collecte : le même plafond que l’import de fichier.
+
+
+114	Chaque ligne refusée pendant une collecte est journalisée (LigneRejetee) : numéro, motif et aperçu tronqué à 500 caractères. Le journal est partagé par l’import de fichier et par les connecteurs, car il est écrit dans le pipeline commun.
+115	Une fiche est « incomplète » si elle n’a ni téléphone ni e-mail, ou pas de ville. Cette définition est à valider avec SYNESS.
+116	Les doublons d’une collecte sont comptés à partir des alertes créées pendant son traitement. Le rattachement des alertes aux collectes n’est pas stocké : une alerte peut concerner une fiche d’une collecte antérieure.
+117	Les compteurs de qualité (nb_incomplets, nb_doublons) sont figés à la fin de la collecte. Ils ne sont pas recalculés ensuite, pour que le rapport reste le reflet de l’exécution.
+
+118	Le rapport d’une collecte (/collectes/<id>/) est accessible à qui peut consulter « Collectes et imports ». Il affiche les compteurs, le taux de rejet (lignes refusées sur lignes traitées) et le détail des lignes rejetées, limité aux 200 premières à l’écran.
+119	La liste des collectes affiche les compteurs de qualité de chaque exécution, avec un lien vers son rapport.
