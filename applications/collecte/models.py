@@ -32,6 +32,9 @@ class SourceDonnees(models.Model):
         help_text="Document de SYNESS qui valide la source (courriel, compte rendu...).",
     )
 
+        # Connecteur qui sait collecter cette source (vide : import de fichier uniquement).
+    code_connecteur = models.CharField(max_length=60, blank=True)
+
     class Meta:
         verbose_name = "source de données"
         verbose_name_plural = "sources de données"
@@ -57,6 +60,9 @@ class Collecte(models.Model):
     statut = models.CharField(max_length=10, choices=Statut.choices, default=Statut.EN_COURS)
     nb_fiches = models.PositiveIntegerField(default=0)
     nb_erreurs = models.PositiveIntegerField(default=0)
+    # Version du connecteur utilisé, pour reproduire une collecte, et motif d'un échec.
+    version_connecteur = models.CharField(max_length=20, blank=True)
+    message_erreur = models.TextField(blank=True)
 
     class Meta:
         verbose_name = "collecte"
