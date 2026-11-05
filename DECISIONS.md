@@ -170,3 +170,17 @@ N°	Décision
 106	Le contrôle d’autorisation est une fonction centrale (verifier_source_autorisee) qui lève SourceNonAutorisee, sous-classe d’ImportInvalide. Les écrans existants continuent de fonctionner, et tous les futurs connecteurs devront l’appeler avant de démarrer.
 107	Retirer l’autorisation exige un motif, est journalisé, et conserve la trace de la dernière validation. Une source retirée est refusée immédiatement.
 108	Les sources déjà validées avant cette fonction sont affichées « validée avant l’ajout de la traçabilité » : SYNESS devra confirmer leur validation, que le Responsable data pourra alors enregistrer.
+
+
+109	Un connecteur implémente recuperer et analyser, déclare un délai minimal entre requêtes et une version. Il produit des lignes au format de l’import CSV et passe par le même pipeline (traiter_lignes) : validation, doublons, provenance.
+110	lancer_collecte appelle d’abord la garde d’autorisation : une source non autorisée est refusée avant toute action, de même qu’une source sans connecteur.
+111	Un échec de récupération n’interrompt pas l’appelant : il est enregistré comme collecte « en erreur » avec son message, ce qui permet les relances et la notification au responsable data.
+112	Le connecteur demonstration est fictif (noms inventés, aucun accès réseau). Il sert aux tests et à la démonstration. Une vraie source aura un connecteur dédié, écrit seulement après la validation écrite de SYNESS.
+113	Chaque collecte conserve la version du connecteur utilisé. Le délai minimal entre requêtes est appliqué par espacer(), que chaque connecteur doit appeler avant une requête réseau. Volume maximal par collecte : le même plafond que l’import de fichier.
+
+
+109	Un connecteur implémente recuperer et analyser, déclare un délai minimal entre requêtes et une version. Il produit des lignes au format de l’import CSV et passe par le même pipeline (traiter_lignes) : validation, doublons, provenance.
+110	lancer_collecte appelle d’abord la garde d’autorisation : une source non autorisée est refusée avant toute action, de même qu’une source sans connecteur.
+111	Un échec de récupération n’interrompt pas l’appelant : il est enregistré comme collecte « en erreur » avec son message, ce qui permet les relances et la notification au responsable data.
+112	Le connecteur demonstration est fictif (noms inventés, aucun accès réseau). Il sert aux tests et à la démonstration. Une vraie source aura un connecteur dédié, écrit seulement après la validation écrite de SYNESS.
+113	Chaque collecte conserve la version du connecteur utilisé. Le délai minimal entre requêtes est appliqué par espacer(), que chaque connecteur doit appeler avant une requête réseau. Volume maximal par collecte : le même plafond que l’import de fichier.
